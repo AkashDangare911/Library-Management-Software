@@ -1,0 +1,60 @@
+.header {
+  background-color: var(--surface-color); /* use root variable for glass */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text-main);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-title {
+  text-decoration: none;
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-main);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* subtle shadow instead of gradient for classic look */
+}
+
+.header-actions button {
+  padding: 0.5rem 1.2rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
+.login-btn {
+  background-color: var(--primary-color);
+  color: #F4E8C1; /* match parchment */
+  border: 1px solid rgba(244, 232, 193, 0.2);
+  box-shadow: var(--shadow-sm);
+}
+
+.login-btn:hover {
+  background-color: var(--primary-hover);
+  box-shadow: var(--glow);
+  transform: translateY(-2px);
+}
+
+.profile-btn {
+  background-color: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--text-main);
+}
+
+.profile-btn:hover {
+  background-color: rgba(244, 232, 193, 0.1);
+}
