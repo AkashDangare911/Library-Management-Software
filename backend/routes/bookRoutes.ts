@@ -1,16 +1,18 @@
 import express, { type Request, type Response } from 'express';
 import pool from '../db.js'; // Note the .js for ESM
 
+import { HTTP_STATUS, BOOK_MESSAGES } from '../utils/responseCodes.js';
+
 const router = express.Router();
 
-// GET /api/books/ (mounted at /api/books in app.ts)
+// GET /books (mounted at /books in app.ts)
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM Books ORDER BY id DESC');
-        res.status(200).json(rows);
+        const [rows] = await pool.query('SELECT * FROM Books ORDER BY id');
+        res.status(HTTP_STATUS.OK).json(rows);
     } catch (error) {
         console.error("Error fetching books:", error);
-        res.status(500).json({ error: "Failed to fetch books" });
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: BOOK_MESSAGES.FETCH_ERROR });
     }
 });
 

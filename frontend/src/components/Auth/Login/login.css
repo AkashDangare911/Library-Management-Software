@@ -106,3 +106,22 @@
   color: var(--primary-hover);
   text-decoration: underline;
 }
+
+.inline-error {
+  background-color: rgba(255, 69, 58, 0.08);
+  color: #ff6b63;
+  border-left: 3px solid #ff453a;
+  padding: 0.6rem 0.8rem;
+  border-radius: 4px;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inline-error::before {
+  content: '⚠️';
+  font-size: 1rem;
+}
