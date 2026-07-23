@@ -1,9 +1,11 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { logoutUser } from "../../utils/api";
+import { useToast } from "../../context/ToastContext";
 import "./header.css"
 
 function Header() {
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!localStorage.getItem("is_user_logged_in"));
@@ -19,6 +21,7 @@ function Header() {
     } catch (e) {}
     localStorage.removeItem("is_user_logged_in");
     setIsUserLoggedIn(false);
+    addToast("Logged out successfully.", "success");
     navigate('/auth/login');
   }
 

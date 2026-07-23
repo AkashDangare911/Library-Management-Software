@@ -57,11 +57,50 @@
   color: rgba(244, 232, 193, 0.4);
 }
 
+/* Fix Chrome autofill background color overriding transparent/dark theme */
+.form-group input:-webkit-autofill,
+.form-group input:-webkit-autofill:hover,
+.form-group input:-webkit-autofill:focus,
+.form-group input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text-main) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 .form-group input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(139, 38, 53, 0.5), inset 0 0 5px rgba(0, 0, 0, 0.5);
   background-color: rgba(0, 0, 0, 0.4);
 }
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: var(--text-main);
+}
+
 
 .login-button {
   margin-top: 1rem;
