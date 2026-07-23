@@ -22,6 +22,7 @@ export const Login = () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json"
         },
@@ -39,7 +40,7 @@ export const Login = () => {
         return;
       }
 
-      localStorage.setItem("auth_token", jsondata.token);
+      localStorage.setItem("is_user_logged_in", "true");
       const from = location.state?.from || '/';
       navigate(from, { replace: true });
     } catch (err) {

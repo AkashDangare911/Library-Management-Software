@@ -25,11 +25,16 @@ router.post('/register', async (req: Request, res: Response) => {
         );
 
         const jwt_token = jwt.sign({ userEmail, userPassword }, process.env.JWT_SECRET, { expiresIn: 3600 });
+        res.cookie('auth_token', jwt_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 3600000
+        });
         res.status(HTTP_STATUS.CREATED)
             .json({
                 message: AUTH_MESSAGES.REGISTER_SUCCESS,
                 success: true,
-                token: jwt_token,
             });
     } catch (error) {
         console.error("Database error during registration:", error);
@@ -57,15 +62,26 @@ router.post('/login', async (req: Request, res: Response) => {
         }
 
         const jwt_token = jwt.sign({ userEmail, userPassword }, process.env.JWT_SECRET, { expiresIn: 3600 });
+        res.cookie('auth_token', jwt_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 3600000
+        });
         res.status(HTTP_STATUS.OK)
             .json({
                 message: AUTH_MESSAGES.LOGIN_SUCCESS,
                 success: true,
-                token: jwt_token,
             });
     } catch (err) {
         console.error(err);
         res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: AUTH_MESSAGES.SERVER_ERROR, success: false });
     }
 });
+
+router.post('/logout', (req: Request, res: Response) => {
+    res.clearCookie('auth_token');
+    res.status(HTTP_STATUS.OK).json({ message: "Logged out successfully", success: true });
+});
+
 export default router;

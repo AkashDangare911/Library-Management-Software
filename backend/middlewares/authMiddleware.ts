@@ -11,11 +11,8 @@ export interface AuthRequest extends Request {
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-    // 1. Extract the token from the "Authorization" header
-    const authHeader = req.headers['authorization'];
-
-    // The header is usually in the format: "Bearer <token>"
-    const token = authHeader && authHeader.split(' ')[1];
+    // 1. Extract the token from cookies
+    const token = req.cookies?.auth_token;
 
     // 2. If there is no token, deny access
     if (!token) {

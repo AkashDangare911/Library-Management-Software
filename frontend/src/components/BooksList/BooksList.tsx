@@ -15,7 +15,7 @@ export const BooksList = () => {
 
   useEffect(() => {
     const fetchBooks = async () => {
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("is_user_logged_in");
       
       if (!token) {
         setError("Please log in to view the entire library catalog.");
@@ -27,7 +27,7 @@ export const BooksList = () => {
         const response = await getAllBooks();
 
         if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("auth_token");
+          localStorage.removeItem("is_user_logged_in");
           setError("Please log in to view the library catalog.");
           return;
         }
@@ -50,7 +50,7 @@ export const BooksList = () => {
   }, []);
 
   const handleBorrow = (bookID: number) => {
-    const isUserLoggedIn = localStorage.getItem("auth_token") ?? '';
+    const isUserLoggedIn = localStorage.getItem("is_user_logged_in") ?? '';
 
     if (isUserLoggedIn) {
       navigate(`/books/${bookID}`);

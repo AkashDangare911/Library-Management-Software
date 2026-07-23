@@ -22,7 +22,7 @@ export const BookDetails = () => {
 
   useEffect(() => {
     const fetchBookDetails = async () => {
-      const token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("is_user_logged_in");
 
       if (!token) {
         setError({ message: "Please login first to see the contents.", type: "auth" });
@@ -32,9 +32,9 @@ export const BookDetails = () => {
 
       try {
         const response = await getBookByID(bookID);
-        
+
         if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("auth_token");
+          localStorage.removeItem("is_user_logged_in");
           setError({ message: "Session expired or invalid. Please login first to see the contents.", type: "auth" });
           return;
         }
@@ -115,7 +115,7 @@ export const BookDetails = () => {
             <button className="borrow-btn" disabled={book.available_copies === 0}>
               {book.available_copies > 0 ? "Confirm Borrow" : "Out of Stock"}
             </button>
-            <button className="back-btn" onClick={() => navigate('/')}>Back to Catalog</button>
+            <button className="back-btn" onClick={() => navigate(-1)}>Back to Catalog</button>
           </div>
         </div>
 

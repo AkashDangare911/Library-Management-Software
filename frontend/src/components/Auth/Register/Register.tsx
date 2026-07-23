@@ -26,6 +26,7 @@ export const Register = () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
       const response = await fetch(`${apiUrl}/auth/register`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json"
         },
@@ -42,7 +43,7 @@ export const Register = () => {
       }
 
       // store and redirect to homw
-      localStorage.setItem("auth_token", jsondata.token);
+      localStorage.setItem("is_user_logged_in", "true");
       navigate('/');
     } catch (err) {
       console.log(err);

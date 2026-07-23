@@ -5,7 +5,7 @@ export const BorrowBook = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!localStorage.getItem("auth_token"));
+    const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!localStorage.getItem("is_user_logged_in"));
 
     useEffect(() => {
         if (!isUserLoggedIn) {

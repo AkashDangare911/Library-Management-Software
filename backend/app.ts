@@ -4,6 +4,7 @@ import cors from 'cors';
 import bookRoutes from './routes/bookRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import * as dotenv from "dotenv";
+import cookieParser from 'cookie-parser';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -11,8 +12,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors()); // Allow frontend to call backend
+app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true })); // Allow frontend to call backend with cookies
 app.use(express.json()); // Parse JSON bodies
+app.use(cookieParser()); // Parse cookies
 
 app.get('/', (req: Request, res: Response) => {
     res.json({ message: 'App is running' });
