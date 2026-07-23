@@ -1,29 +1,34 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { BooksNotFound } from './BooksNotFound';
+import { Loader } from '../Loader/Loader';
+import { cachedBooks, setCachedBooks } from '../../utils/bookCache';
+import { getAllBooks } from '../../utils/api';
+import type { Book } from '../../utils/bookCache';
 import "./home.css";
 
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  total_copies: number;
-  available_copies: number;
-}
-
 export const Home = () => {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [books, setBooks] = useState<Book[]>(cachedBooks || []);
+  const [loading, setLoading] = useState(!cachedBooks);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const isUserLoggedIn = !!localStorage.getItem("auth_token");
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
-        const response = await fetch(`${apiUrl}/books`);
+        const response = await getAllBooks();
+
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("auth_token");
+          setError("Please log in to view the library catalog.");
+          return;
+        }
+
         if (!response.ok) throw new Error("Failed to fetch books");
         const data = await response.json();
+        setCachedBooks(data);
         setBooks(data);
       } catch (err) {
         setError("Could not load the library catalog.");
@@ -33,21 +38,24 @@ export const Home = () => {
       }
     };
 
-    fetchBooks();
+    if (!cachedBooks) {
+      fetchBooks();
+    }
   }, []);
 
-  const handleBorrow = () => {
-    const isUserLoggedIn = localStorage.getItem("isLoggedIn") ?? '';
+  const handleBorrow = (bookID: number) => {
+    const isUserLoggedIn = localStorage.getItem("auth_token") ?? '';
+
     if (isUserLoggedIn) {
-      navigate('/borrowBook');
+      navigate(`/books/${bookID}`);
     } else {
-      navigate('/auth/login');
+      navigate('/auth/login', { state: { from: `/books/${bookID}` } });
     }
   };
 
-  if (loading) return <div className="loading-state">Loading books...</div>;
+  if (loading) return <Loader text="Unlocking the archives..." />;
   if (error) {
-    return <BooksNotFound message={error} />;
+    return <BooksNotFound message={error} isAuthError={error.includes("log in")} />;
   }
 
   const totalBooks = books.length;
@@ -111,7 +119,7 @@ export const Home = () => {
         <h2 className="section-title">Library Catalog</h2>
 
         <div className="books-grid">
-          {books.slice(0, 5).map((book) => (
+          {books.slice(0, 8).map((book) => (
             <div key={book.id} className="book-card">
               <div className="book-cover-container">
                 <div className="book-cover">
@@ -129,7 +137,6 @@ export const Home = () => {
                 <p className="book-author">By {book.author}</p>
 
                 <div className="book-stats">
-                  <span>Total: {book.total_copies}</span>
                   <span className={book.available_copies > 0 ? "available" : "unavailable"}>
                     Available: {book.available_copies}
                   </span>
@@ -137,21 +144,17 @@ export const Home = () => {
 
                 <button
                   className="borrow-button"
-                  onClick={handleBorrow}
+                  onClick={() => handleBorrow(book.id)}
                   disabled={book.available_copies === 0}
                 >
-                  {book.available_copies > 0 ? "Borrow Book" : "Out of Stock"}
+                  {book.available_copies > 0 ? "View Book" : "Out of Stock"}
                 </button>
               </div>
             </div>
           ))}
         </div>
 
-        {books.length > 5 && (
-          <div className="more-books-banner">
-            <h3 className="more-books-text">...and many more fascinating titles awaiting your discovery.</h3>
-          </div>
-        )}
+
       </section>
 
       <div className="section-separator"></div>
@@ -159,10 +162,22 @@ export const Home = () => {
       {/* CTA Section */}
       <section className="cta-section">
         <div className="cta-content">
-          <h2 className="cta-title">Ready to Start Your Journey?</h2>
-          <p className="cta-desc">Join our community of readers and gain unlimited access to our vast library of knowledge.</p>
-          <button className="hero-cta" onClick={() => navigate('/login')}>
-            Join the Library
+          <h2 className="cta-title">
+            {isUserLoggedIn ? "Ready to Explore?" : "Ready to Start Your Journey?"}
+          </h2>
+          <p className="cta-desc">
+            {isUserLoggedIn
+              ? "Dive into our vast catalog and find your next great read."
+              : "Join our community of readers and gain unlimited access to our vast library of knowledge."}
+          </p>
+          <button 
+            className="hero-cta" 
+            onClick={() => {
+              if (isUserLoggedIn) navigate('/books');
+              else navigate('/auth/login', { state: { from: location.pathname } });
+            }}
+          >
+            {isUserLoggedIn ? "View Catalogue" : "Join the Library"}
           </button>
         </div>
       </section>

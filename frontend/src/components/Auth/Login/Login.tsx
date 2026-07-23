@@ -1,12 +1,13 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./login.css";
 import { useState } from "react";
 
 export const Login = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<any>("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -38,8 +39,9 @@ export const Login = () => {
         return;
       }
 
-      localStorage.setItem("isLoggedIn", "true");
-      navigate('/');
+      localStorage.setItem("auth_token", jsondata.token);
+      const from = location.state?.from || '/';
+      navigate(from, { replace: true });
     } catch (err) {
       console.log(err);
       setError(err);

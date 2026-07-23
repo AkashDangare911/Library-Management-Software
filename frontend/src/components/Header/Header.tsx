@@ -5,15 +5,15 @@ import "./header.css"
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!localStorage.getItem("isLoggedIn"));
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!localStorage.getItem("auth_token"));
   const isAuthPage = location.pathname.startsWith('/auth');
 
   useEffect(() => {
-    setIsUserLoggedIn(!!localStorage.getItem("isLoggedIn"));
+    setIsUserLoggedIn(!!localStorage.getItem("auth_token"));
   }, [location]);
 
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("auth_token");
     setIsUserLoggedIn(false);
     navigate('/auth/login');
   }
@@ -28,7 +28,7 @@ function Header() {
         {!isAuthPage && (
           isUserLoggedIn ?
             <button className="logout-btn" onClick={handleLogout}>Logout</button> :
-            <button className="login-btn" onClick={() => navigate('/auth/login')}>Login</button>
+            <button className="login-btn" onClick={() => navigate('/auth/login', { state: { from: location.pathname } })}>Login</button>
         )}
       </div>
     </div>

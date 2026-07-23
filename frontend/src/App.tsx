@@ -5,11 +5,15 @@ import { Register } from "./components/Auth/Register/Register";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import { BorrowBook } from "./components/BorrowBook/BorrowBook";
+import { BookDetails } from "./components/BookDetails/BookDetails";
+import { BooksList } from "./components/BooksList/BooksList";
 import { PageNotFound } from "./components/PageNotFound/PageNotFound";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 function App() {
   return (
     <>
+      <ScrollToTop />
       <Header />
       <main className="main-content">
         <Routes>
@@ -19,6 +23,8 @@ function App() {
             <Route path="register" element={<Register />} />
           </Route>
           <Route path="/borrowBook" element={<BorrowBook />} />
+          <Route path="/books" element={<BooksList />} />
+          <Route path="/books/:bookID" element={<BookDetails />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>

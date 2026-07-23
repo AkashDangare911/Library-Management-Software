@@ -35,7 +35,15 @@ export const Register = () => {
       const jsondata = await response.json();
       console.log(jsondata);
 
-      navigate('/auth/login');
+      if (jsondata.error) {
+        setError(jsondata.error);
+        console.log(error);
+        return;
+      }
+
+      // store and redirect to homw
+      localStorage.setItem("auth_token", jsondata.token);
+      navigate('/');
     } catch (err) {
       console.log(err);
     }

@@ -1,0 +1,181 @@
+.book-details-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px);
+  padding: 2rem;
+}
+
+.book-details-card {
+  background-color: var(--surface-color);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 4rem;
+  max-width: 900px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  text-align: left;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4rem;
+}
+
+.book-details-visual {
+  flex: 0 0 auto;
+  perspective: 1000px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.book-details-visual .book-cover-container {
+  transform: scale(1.4);
+  margin: 3rem 1rem;
+}
+
+.book-details-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.book-details-header h1 {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.book-details-header h3 {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 2rem;
+}
+
+.book-details-desc {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-main);
+  margin-bottom: 2rem;
+  text-align: justify;
+}
+
+.book-details-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  width: 100%;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+}
+
+.stat-value.available {
+  color: #10B981;
+}
+
+.stat-name {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.book-details-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.borrow-btn {
+  padding: 1rem;
+  background-color: var(--primary-color);
+  color: #F4E8C1;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.borrow-btn:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  box-shadow: var(--glow);
+}
+
+.borrow-btn:disabled {
+  background-color: #555;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.back-btn {
+  padding: 1rem;
+  background-color: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: rgba(244, 232, 193, 0.1);
+}
+
+.book-details-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  text-align: center;
+  gap: 1.5rem;
+}
+
+.book-details-error h2 {
+  color: #EF4444;
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+}
+
+.book-details-error p {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.book-details-error button {
+  padding: 0.8rem 2rem;
+  background-color: var(--primary-color);
+  color: #F4E8C1;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.book-details-error button:hover {
+  background-color: var(--primary-hover);
+}
