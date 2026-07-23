@@ -95,11 +95,38 @@ This document outlines the core third-party dependencies used in the Library Man
   const dbUser = process.env.DB_USER;
   ```
 
+### 9. `cookie-parser`
+- **Why it was added:** Parses `Cookie` header and populates `req.cookies` with an object keyed by the cookie names. Essential for securely reading the `HttpOnly` JWT cookie sent by the browser.
+- **Example Usage:**
+  ```typescript
+  import cookieParser from 'cookie-parser';
+  app.use(cookieParser());
+  const token = req.cookies.auth_token;
+  ```
+
+### 10. `jsonwebtoken`
+- **Why it was added:** Used for generating and verifying JSON Web Tokens (JWT). This allows us to securely authenticate users without storing session data on the server (stateless authentication).
+- **Example Usage:**
+  ```typescript
+  import jwt from 'jsonwebtoken';
+  const token = jwt.sign({ userId: 1 }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  ```
+
+### 11. `bcrypt`
+- **Why it was added:** Used for securely hashing passwords before storing them in the database, and for comparing login passwords against the hashed versions. It incorporates a salt to protect against rainbow table attacks.
+- **Example Usage:**
+  ```typescript
+  import bcrypt from 'bcrypt';
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const match = await bcrypt.compare(password, hashedPassword);
+  ```
+
 ---
 
 ## 🛡️ Shared Dependencies
 
-### 9. `typescript`
+### 12. `typescript`
 - **Why it was added:** Used on both the frontend and backend to add static typing to JavaScript. It catches bugs during development (before the code even runs), provides excellent autocomplete in VS Code, and acts as built-in documentation for our data structures.
 - **Example Usage:**
   ```typescript

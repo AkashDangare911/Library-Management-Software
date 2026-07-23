@@ -21,6 +21,7 @@ A modern, full-stack web application designed to manage library books, user regi
 - **Node.js & Express:** Minimalist web framework handling API requests.
 - **TypeScript & TSX:** Native TypeScript execution without manual compilation.
 - **MySQL 2 (Promise):** Relational database with connection pooling and async/await support.
+- **JWT & HttpOnly Cookies:** Stateless, secure user authentication.
 - **Dotenv:** Secure environment variable management.
 - **CORS:** Cross-origin resource sharing enabled for frontend communication.
 
@@ -57,6 +58,7 @@ Detailed documentation about the specific technologies and architectural concept
 - `docs/react.md` - Functional components, hooks, routing.
 - `docs/typescript.md` - Interfaces, generic types, typed Express handlers.
 - `docs/express.md` - Routing, CORS, API design.
+- `docs/authentication.md` - JWT, HttpOnly Cookies, and Auth Flow.
 - `docs/mysql.md` - Connection pooling, Relational Schema, async/await.
-- `docs/css.md` - Design System, CSS Variables, Glassmorphism.
+- `docs/css.md` - Design System, CSS Variables, Glassmorphism, Animations.
 - `docs/dependencies.md` - Complete list of third-party libraries used.

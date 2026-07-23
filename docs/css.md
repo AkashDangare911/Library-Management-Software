@@ -47,3 +47,28 @@ Buttons and cards feature subtle `transform` and `box-shadow` transitions on hov
   box-shadow: var(--shadow-lg);
 }
 ```
+
+### 5. CSS Keyframe Animations
+We use `@keyframes` for more complex, continuous animations or entrance/exit effects (like the Toast notifications sliding in and out).
+**Example from `toast.css`:**
+```css
+@keyframes slideInLeft {
+  0% { transform: translateX(-120%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.toast {
+  animation: slideInLeft 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+```
+
+### 6. Browser-Specific Hacks (`-webkit-`)
+Sometimes browsers aggressively apply default styles that ruin the theme (like Chrome's yellow/white autofill background). We use vendor-specific pseudo-classes to override them.
+**Example from `login.css`:**
+```css
+/* Fix Chrome autofill overriding dark transparent background */
+input:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-main) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+```

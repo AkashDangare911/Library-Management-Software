@@ -37,3 +37,22 @@ useEffect(() => {
 
 ### 4. React Router (`react-router-dom`)
 We use React Router for client-side navigation between pages without reloading the browser. Concepts used include `<Routes>`, `<Route>`, `<Link>`, and the `useNavigate` hook for programmatic redirects (e.g., navigating to `/login` when the Borrow button is clicked).
+
+### 5. Context API (`createContext`, `useContext`)
+We use React's Context API to manage global state that needs to be accessed by many components at different nesting levels, avoiding "prop drilling".
+**Example (`ToastContext.tsx`):**
+```tsx
+const ToastContext = createContext();
+
+export const ToastProvider = ({ children }) => {
+  const [toasts, setToasts] = useState([]);
+  return (
+    <ToastContext.Provider value={{ toasts, setToasts }}>
+      {children}
+    </ToastContext.Provider>
+  );
+};
+
+// Usage in a component:
+const { toasts } = useContext(ToastContext);
+```

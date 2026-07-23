@@ -30,12 +30,15 @@ app.get('/api/books', async (req: Request, res: Response) => {
 });
 ```
 
-### 3. Middleware (CORS)
-We use the `cors` middleware to allow Cross-Origin Resource Sharing. This is necessary because our React frontend runs on a different port (e.g., 5173 or another Vite default) than our backend (3000), and modern browsers block cross-origin requests by default for security.
+### 3. Middleware (CORS & Cookie Parser)
+We use the `cors` middleware to allow Cross-Origin Resource Sharing. This is necessary because our React frontend runs on a different port (e.g., 5173 or another Vite default) than our backend (3000). We explicitly set `credentials: true` so the browser is allowed to send cookies across origins.
+We also use `cookie-parser` to easily read cookies (like our JWT auth token) out of incoming requests.
 **Example from `app.ts`:**
 ```typescript
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 const app = express();
-app.use(cors()); // Allow frontend to call backend
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(cookieParser());
 ```
