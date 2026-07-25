@@ -3,8 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BooksNotFound } from '../Home/BooksNotFound';
 import { Loader } from '../Loader/Loader';
 import { queryCache, setQueryCache } from '../../utils/bookCache';
-import { getAllBooks } from '../../utils/api';
+import { getAllBooks, getFavorites, toggleFavorite } from '../../utils/api';
 import type { Book } from '../../utils/bookCache';
+import { Heart } from 'lucide-react';
 import "./booksList.css";
 
 export const BooksList = () => {
@@ -12,10 +13,13 @@ export const BooksList = () => {
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
 
   const [books, setBooks] = useState<Book[]>([]);
+  const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [totalPages, setTotalPages] = useState(1);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isFiltering, setIsFiltering] = useState(false);
   const [error, setError] = useState("");
+
+  const isUserLoggedIn = !!localStorage.getItem("is_user_logged_in");
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
@@ -24,6 +28,17 @@ export const BooksList = () => {
   const [availableOnly, setAvailableOnly] = useState(searchParams.get("available") === "true");
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isUserLoggedIn) {
+      getFavorites().then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setFavorites(new Set(data));
+        }
+      });
+    }
+  }, [isUserLoggedIn]);
 
   // Helper to update filters and reset page to 1
   const updateFilter = (key: string, value: string | boolean) => {
@@ -119,12 +134,34 @@ export const BooksList = () => {
   }, [searchTerm, categoryFilter, minRating, availableOnly, pageParam]);
 
   const handleBorrow = (bookID: number) => {
-    const isUserLoggedIn = localStorage.getItem("is_user_logged_in") ?? '';
-
     if (isUserLoggedIn) {
       navigate(`/books/${bookID}`);
     } else {
       navigate('/auth/login', { state: { from: `/books/${bookID}` } });
+    }
+  };
+
+  const handleFavoriteToggle = async (e: React.MouseEvent, bookID: number) => {
+    e.stopPropagation();
+    if (!isUserLoggedIn) {
+      navigate('/auth/login', { state: { from: '/books' } });
+      return;
+    }
+
+    try {
+      const res = await toggleFavorite(bookID); // update the backend
+      if (res.ok) {
+        // update frontend state (don't refetch from BE)
+        // upon reload, we'll get the latest state from BE
+        setFavorites(prev => {
+          const next = new Set(prev);
+          if (next.has(bookID)) next.delete(bookID);
+          else next.add(bookID);
+          return next;
+        });
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -232,6 +269,17 @@ export const BooksList = () => {
       <div className={`books-grid ${isFiltering ? 'books-grid-loading' : ''}`}>
         {books.length > 0 ? books.map((book) => (
           <div key={book.id} className="book-card">
+            <button
+              className="favorite-btn"
+              onClick={(e) => handleFavoriteToggle(e, book.id)}
+              aria-label="Toggle Favorite"
+            >
+              <Heart
+                size={24}
+                fill={favorites.has(book.id) ? "var(--primary-color)" : "none"}
+                color={favorites.has(book.id) ? "var(--primary-color)" : "var(--text-main)"}
+              />
+            </button>
             <div className="book-cover-container">
               <div className="book-cover">
                 <div className="book-spine"></div>

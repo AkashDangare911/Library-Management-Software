@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Loader } from '../Loader/Loader';
-import { getBookByID } from '../../utils/api';
+import { getBookByID, getFavorites, toggleFavorite } from '../../utils/api';
+import { Heart } from 'lucide-react';
 import "./bookDetails.css";
 
 interface Book {
+  id: number;
   title: string;
   author: string;
   total_copies: number;
@@ -19,6 +21,7 @@ export const BookDetails = () => {
   const { bookID } = useParams<{ bookID: string }>();
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [error, setError] = useState<{ message: string, type: "auth" | "not_found" | "generic" } | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,7 +37,7 @@ export const BookDetails = () => {
       }
 
       try {
-        const response = await getBookByID(bookID);
+        const response = await getBookByID(bookID as string);
 
         if (response.status === 401 || response.status === 403) {
           localStorage.removeItem("is_user_logged_in");
@@ -51,6 +54,16 @@ export const BookDetails = () => {
 
         const data = await response.json();
         setBook(data);
+
+        // Fetch favorites to see if this book is favored
+        const favRes = await getFavorites();
+        if (favRes.ok) {
+          const favData = await favRes.json();
+          if (favData.includes(Number(bookID))) {
+            setIsFavorite(true);
+          }
+        }
+
       } catch (err) {
         setError({ message: "Could not load the book details.", type: "generic" });
         console.error(err);
@@ -61,6 +74,17 @@ export const BookDetails = () => {
 
     fetchBookDetails();
   }, [bookID]);
+
+  const handleFavoriteToggle = async () => {
+    try {
+      const res = await toggleFavorite(Number(bookID));
+      if (res.ok) {
+        setIsFavorite(!isFavorite);
+      }
+    } catch (err) {
+      console.error("Failed to toggle favorite", err);
+    }
+  };
 
   if (loading) return <Loader text="Retrieving book details..." />;
 
@@ -106,8 +130,32 @@ export const BookDetails = () => {
 
         <div className="book-details-info">
           <div className="book-details-header">
-            <h1>{book.title}</h1>
-            <h3>By {book.author}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <h1>{book.title}</h1>
+                <h3>By {book.author}</h3>
+              </div>
+              <button
+                className="favorite-btn-details"
+                onClick={handleFavoriteToggle}
+                aria-label="Toggle Favorite"
+                style={{
+                  background: 'transparent',
+                  border: 'white',
+                  cursor: 'pointer',
+                  padding: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Heart
+                  size={32}
+                  fill={isFavorite ? "var(--primary-color)" : "none"}
+                  color={isFavorite ? "var(--primary-color)" : "var(--text-main)"}
+                />
+              </button>
+            </div>
 
             <div className="book-details-meta">
               {book.category && <span className="meta-tag category-tag">{book.category}</span>}

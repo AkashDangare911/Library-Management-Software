@@ -29,4 +29,27 @@ export const logoutUser = async () => {
     credentials: "include"
   });
   return response;
+  return response;
+};
+
+// --- Favorites API ---
+
+export const getFavorites = async () => {
+  const url = `${apiUrl}/books/me/favorites`;
+  const response = await fetch(url, {
+    credentials: "include"
+  });
+  return response;
+};
+
+export const toggleFavorite = async (bookID: number) => {
+  const url = `${apiUrl}/books/${bookID}/favorite`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include"
+  });
+  return response;
 };

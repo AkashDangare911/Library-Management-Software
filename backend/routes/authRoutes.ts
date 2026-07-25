@@ -13,18 +13,19 @@ router.post('/register', async (req: Request, res: Response) => {
     const { userName, userEmail, userPassword } = req.body;
 
     try {
-        const [row]: any = await pool.execute("SELECT count(*) from Users where email = ?", [userEmail]);
-        if (row.length > 0) {
+        const [row]: any = await pool.execute("SELECT count(*) as count from Users where email = ?", [userEmail]);
+        if (row[0].count > 0) {
             return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: AUTH_MESSAGES.USER_ALREADY_REGISTERED_ERROR, success: false });
         }
 
         const hashedPassword = await bcrypt.hash(userPassword, SALT_ROUNDS);
-        await pool.execute(
+        const [result]: any = await pool.execute(
             "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
             [userName, userEmail, hashedPassword]
         );
+        const userId = result.insertId;
 
-        const jwt_token = jwt.sign({ userEmail, userPassword }, process.env.JWT_SECRET, { expiresIn: 3600 });
+        const jwt_token = jwt.sign({ id: userId, userEmail }, process.env.JWT_SECRET as string, { expiresIn: 3600 });
         res.cookie('auth_token', jwt_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -46,7 +47,7 @@ router.post('/login', async (req: Request, res: Response) => {
     const { userEmail, userPassword } = req.body;
 
     try {
-        const [rows]: any = await pool.execute("SELECT password from Users where email=?", [userEmail])
+        const [rows]: any = await pool.execute("SELECT id, password from Users where email=?", [userEmail])
 
         // no user with this email found
         if (rows.length === 0) {
@@ -61,7 +62,7 @@ router.post('/login', async (req: Request, res: Response) => {
             return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: AUTH_MESSAGES.WRONG_PASSWORD, success: false });
         }
 
-        const jwt_token = jwt.sign({ userEmail, userPassword }, process.env.JWT_SECRET, { expiresIn: 3600 });
+        const jwt_token = jwt.sign({ id: rows[0].id, userEmail }, process.env.JWT_SECRET as string, { expiresIn: 3600 });
         res.cookie('auth_token', jwt_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',

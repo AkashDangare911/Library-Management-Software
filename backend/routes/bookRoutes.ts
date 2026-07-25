@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/', async (req: Request, res: Response) => {
     try {
         const { search, category, rating, available, page, limit, sort } = req.query;
-        
+
         // Pagination logic
         const currentPage = parseInt(page as string) || 1;
         const itemsPerPage = parseInt(limit as string) || 10;
@@ -56,7 +56,7 @@ router.get('/', async (req: Request, res: Response) => {
         const dataParams = [...params, itemsPerPage, offset];
 
         const [rows] = await pool.query(dataQuery, dataParams);
-        
+
         res.status(HTTP_STATUS.OK).json({
             books: rows,
             totalItems,
@@ -69,10 +69,62 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
+// GET /books/me/favorites - Get all favorite book IDs for logged in user
+router.get('/me/favorites', authenticateToken, async (req: AuthRequest, res: Response) => {
+    try {
+        const userID = req.user?.id;
+        if (!userID) {
+            return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: "Unauthorized" });
+        }
+
+        const [rows]: any = await pool.query('SELECT book_id FROM favorites WHERE user_id = ?', [userID]);
+        const favoriteBookIDs = rows.map((row: any) => row.book_id);
+
+        res.status(HTTP_STATUS.OK).json(favoriteBookIDs);
+    } catch (error) {
+        console.error("Error fetching favorites:", error);
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to fetch favorites" });
+    }
+});
+
+// POST /books/:bookID/favorite - Toggle favorite status
+router.post('/:bookID/favorite', authenticateToken, async (req: AuthRequest, res: Response) => {
+    try {
+        const userID = req.user?.id;
+        const { bookID } = req.params;
+
+        if (!userID) {
+            return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: "Unauthorized" });
+        }
+
+        // Check if book exists
+        const [book]: any = await pool.query('SELECT id FROM books WHERE id = ?', [bookID]);
+        if (book.length === 0) {
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ error: "Book not found" });
+        }
+
+        // Check if already favorited
+        const [existing]: any = await pool.query('SELECT * FROM favorites WHERE user_id = ? AND book_id = ?', [userID, bookID]);
+
+        if (existing.length > 0) {
+            // Remove from favorites
+            await pool.query('DELETE FROM favorites WHERE user_id = ? AND book_id = ?', [userID, bookID]);
+            return res.status(HTTP_STATUS.OK).json({ message: "Book removed from favorites", isFavorite: false });
+        } else {
+            // Add to favorites
+            await pool.query('INSERT INTO favorites (user_id, book_id) VALUES (?, ?)', [userID, bookID]);
+            return res.status(HTTP_STATUS.OK).json({ message: "Book added to favorites", isFavorite: true });
+        }
+    } catch (error) {
+        console.error("Error toggling favorite:", error);
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to toggle favorite" });
+    }
+});
+
 router.get('/:bookID', authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
         const { bookID } = req.params;
-        const [book]: any = await pool.query('SELECT title, author, total_copies, available_copies, description, isbn, category, rating FROM Books WHERE id = ?', [bookID]);
+        const [book]: any = await pool.query('SELECT id, title, author, total_copies, available_copies, description, isbn, category, rating FROM Books WHERE id = ?', [bookID]);
 
         if (book.length === 0) {
             return res.status(HTTP_STATUS.NOT_FOUND).json({ error: "Book not found" });
