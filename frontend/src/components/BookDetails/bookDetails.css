@@ -179,3 +179,34 @@
 .book-details-error button:hover {
   background-color: var(--primary-hover);
 }
+
+.book-details-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.meta-tag {
+  font-size: 0.9rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  background: rgba(42, 16, 19, 0.8);
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+}
+
+.category-tag {
+  color: #10B981;
+}
+
+.rating-tag {
+  color: #FBBF24;
+}
+
+.isbn-tag {
+  color: var(--text-muted);
+}

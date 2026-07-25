@@ -7,6 +7,8 @@ import Footer from "./components/Footer/Footer";
 import { BorrowBook } from "./components/BorrowBook/BorrowBook";
 import { BookDetails } from "./components/BookDetails/BookDetails";
 import { BooksList } from "./components/BooksList/BooksList";
+import { About } from "./components/About/About";
+import { Profile } from "./components/Profile/Profile";
 import { PageNotFound } from "./components/PageNotFound/PageNotFound";
 import { ScrollToTop } from "./components/ScrollToTop";
 
@@ -18,6 +20,8 @@ function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="auth">
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />

@@ -4,10 +4,20 @@ export interface Book {
   author: string;
   total_copies: number;
   available_copies: number;
+  isbn?: string;
+  category?: string;
+  rating?: number;
 }
 
-export let cachedBooks: Book[] | null = null;
+export interface PaginatedResponse {
+  books: Book[];
+  totalPages: number;
+  totalItems: number;
+  currentPage: number;
+}
 
-export const setCachedBooks = (books: Book[]) => {
-  cachedBooks = books;
+export const queryCache: Record<string, PaginatedResponse> = {};
+
+export const setQueryCache = (queryString: string, data: PaginatedResponse) => {
+  queryCache[queryString] = data;
 };

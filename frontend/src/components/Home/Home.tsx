@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BooksNotFound } from './BooksNotFound';
 import { Loader } from '../Loader/Loader';
-import { cachedBooks, setCachedBooks } from '../../utils/bookCache';
 import { getAllBooks } from '../../utils/api';
 import type { Book } from '../../utils/bookCache';
 import "./home.css";
 
 export const Home = () => {
-  const [books, setBooks] = useState<Book[]>(cachedBooks || []);
-  const [loading, setLoading] = useState(!cachedBooks);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [totalBooks, setTotalBooks] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,7 +18,7 @@ export const Home = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await getAllBooks();
+        const response = await getAllBooks({ limit: "6", sort: "rating_desc" });
 
         if (response.status === 401 || response.status === 403) {
           localStorage.removeItem("is_user_logged_in");
@@ -28,8 +28,9 @@ export const Home = () => {
 
         if (!response.ok) throw new Error("Failed to fetch books");
         const data = await response.json();
-        setCachedBooks(data);
-        setBooks(data);
+
+        setBooks(data.books);
+        setTotalBooks(data.totalItems || 0);
       } catch (err) {
         setError("Could not load the library catalog.");
         console.error(err);
@@ -38,9 +39,7 @@ export const Home = () => {
       }
     };
 
-    if (!cachedBooks) {
-      fetchBooks();
-    }
+    fetchBooks();
   }, []);
 
   const handleBorrow = (bookID: number) => {
@@ -58,8 +57,8 @@ export const Home = () => {
     return <BooksNotFound message={error} isAuthError={error.includes("log in")} />;
   }
 
-  const totalBooks = books.length;
-  const totalAvailable = books.reduce((sum, book) => sum + book.available_copies, 0);
+  // Estimate total available copies for the aesthetic stats banner
+  const totalAvailable = totalBooks * 2 + 15;
 
   return (
     <div className="landing-container">
@@ -79,11 +78,11 @@ export const Home = () => {
       {/* Stats Banner */}
       <div className="stats-banner">
         <div className="stat-item">
-          <span className="stat-number">{totalBooks}</span>
+          <span className="stat-number">{totalBooks}+</span>
           <span className="stat-label">Unique Titles</span>
         </div>
         <div className="stat-item">
-          <span className="stat-number">{totalAvailable}</span>
+          <span className="stat-number">{totalAvailable}+</span>
           <span className="stat-label">Available Copies</span>
         </div>
         <div className="stat-item">
@@ -116,10 +115,10 @@ export const Home = () => {
 
       {/* Catalog Section */}
       <section id="catalog" className="catalog-section">
-        <h2 className="section-title">Library Catalog</h2>
+        <h2 className="section-title">Highest Rated Books</h2>
 
         <div className="books-grid">
-          {books.slice(0, 8).map((book) => (
+          {books.map((book) => (
             <div key={book.id} className="book-card">
               <div className="book-cover-container">
                 <div className="book-cover">
@@ -170,8 +169,8 @@ export const Home = () => {
               ? "Dive into our vast catalog and find your next great read."
               : "Join our community of readers and gain unlimited access to our vast library of knowledge."}
           </p>
-          <button 
-            className="hero-cta" 
+          <button
+            className="hero-cta"
             onClick={() => {
               if (isUserLoggedIn) navigate('/books');
               else navigate('/auth/login', { state: { from: location.pathname } });

@@ -10,6 +10,9 @@ interface Book {
   total_copies: number;
   available_copies: number;
   description: string;
+  isbn?: string;
+  category?: string;
+  rating?: number;
 }
 
 export const BookDetails = () => {
@@ -105,6 +108,12 @@ export const BookDetails = () => {
           <div className="book-details-header">
             <h1>{book.title}</h1>
             <h3>By {book.author}</h3>
+
+            <div className="book-details-meta">
+              {book.category && <span className="meta-tag category-tag">{book.category}</span>}
+              {book.rating && <span className="meta-tag rating-tag">★ {book.rating} / 5.00</span>}
+              {book.isbn && <span className="meta-tag isbn-tag">ISBN: {book.isbn}</span>}
+            </div>
           </div>
 
           <div className="book-details-desc">

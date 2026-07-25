@@ -1,0 +1,146 @@
+.about-container {
+  padding: 4rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: var(--font-family);
+  color: var(--text-main);
+}
+
+.about-hero {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.about-title {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.about-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.about-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.about-section h2 {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.about-section p {
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+/* Features List */
+.features-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.feature-item {
+  display: flex;
+  gap: 1rem;
+  background: var(--surface-color);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.feature-icon {
+  color: var(--primary-color);
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.feature-item h3 {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+}
+
+.feature-item p {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* Usage Guide */
+.usage-guide {
+  background: var(--surface-color);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.usage-guide ol {
+  padding-left: 1.5rem;
+  line-height: 1.8;
+}
+
+.usage-guide li {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.usage-guide strong {
+  color: var(--primary-color);
+}
+
+/* Developer Info */
+.dev-card {
+  background: var(--surface-color);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--primary-color);
+}
+
+.dev-card p {
+  margin-bottom: 0.5rem;
+}
+
+.contact-info {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.contact-link {
+  display: inline-block;
+  margin-top: 1rem;
+  background: var(--primary-color);
+  color: #F4E8C1;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+  background: rgba(139, 38, 53, 0.8);
+  box-shadow: 0 0 10px rgba(139, 38, 53, 0.5);
+}
