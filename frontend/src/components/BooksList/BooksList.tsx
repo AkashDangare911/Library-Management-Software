@@ -6,6 +6,7 @@ import { queryCache, setQueryCache } from '../../utils/bookCache';
 import { getAllBooks, getFavorites, toggleFavorite } from '../../utils/api';
 import type { Book } from '../../utils/bookCache';
 import { Heart } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import "./booksList.css";
 
 export const BooksList = () => {
@@ -19,7 +20,7 @@ export const BooksList = () => {
   const [isFiltering, setIsFiltering] = useState(false);
   const [error, setError] = useState("");
 
-  const isUserLoggedIn = !!localStorage.getItem("is_user_logged_in");
+  const { user, logout } = useAuth();
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
@@ -30,7 +31,7 @@ export const BooksList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isUserLoggedIn) {
+    if (user) {
       getFavorites().then(async (res) => {
         if (res.ok) {
           const data = await res.json();
@@ -38,7 +39,7 @@ export const BooksList = () => {
         }
       });
     }
-  }, [isUserLoggedIn]);
+  }, [user]);
 
   // Helper to update filters and reset page to 1
   const updateFilter = (key: string, value: string | boolean) => {
@@ -68,9 +69,7 @@ export const BooksList = () => {
 
   useEffect(() => {
     const fetchBooks = async () => {
-      const token = localStorage.getItem("is_user_logged_in");
-
-      if (!token) {
+      if (!user) {
         setError("Please log in to view the entire library catalog.");
         setIsInitialLoad(false);
         setIsFiltering(false);
@@ -104,7 +103,7 @@ export const BooksList = () => {
         const response = await getAllBooks(params);
 
         if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("is_user_logged_in");
+          logout();
           setError("Please log in to view the library catalog.");
           return;
         }
@@ -134,7 +133,7 @@ export const BooksList = () => {
   }, [searchTerm, categoryFilter, minRating, availableOnly, pageParam]);
 
   const handleBorrow = (bookID: number) => {
-    if (isUserLoggedIn) {
+    if (user) {
       navigate(`/books/${bookID}`);
     } else {
       navigate('/auth/login', { state: { from: `/books/${bookID}` } });
@@ -143,7 +142,7 @@ export const BooksList = () => {
 
   const handleFavoriteToggle = async (e: React.MouseEvent, bookID: number) => {
     e.stopPropagation();
-    if (!isUserLoggedIn) {
+    if (!user) {
       navigate('/auth/login', { state: { from: '/books' } });
       return;
     }

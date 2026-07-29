@@ -2,22 +2,19 @@ import { Link, useNavigate, useLocation, NavLink } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { logoutUser } from "../../utils/api";
 import { useToast } from "../../context/ToastContext";
-import { User } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { User, ShieldUser, Library } from "lucide-react";
 import "./header.css"
 
 function Header() {
   const { addToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!localStorage.getItem("is_user_logged_in"));
+  const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  const isAuthPage = location.pathname.startsWith('/auth');
 
-  useEffect(() => {
-    setIsUserLoggedIn(!!localStorage.getItem("is_user_logged_in"));
-  }, [location]);
+  const isAuthPage = location.pathname.startsWith('/auth');
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -36,9 +33,8 @@ function Header() {
   const handleLogout = async () => {
     try {
       await logoutUser();
-    } catch (e) {}
-    localStorage.removeItem("is_user_logged_in");
-    setIsUserLoggedIn(false);
+    } catch (e) { }
+    logout();
     setIsDropdownOpen(false);
     addToast("Logged out successfully.", "success");
     navigate('/auth/login');
@@ -64,42 +60,66 @@ function Header() {
 
       {!isAuthPage && (
         <nav className="header-nav">
-          <NavLink 
-            to="/" 
+          <NavLink
+            to="/"
             className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
           >
             Home
           </NavLink>
-          <NavLink 
-            to="/books" 
+          <NavLink
+            to="/books"
             className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
           >
             Books
           </NavLink>
-          <NavLink 
-            to="/about" 
+          <NavLink
+            to="/about"
             className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
           >
             About
           </NavLink>
+
+          {/* Role specific links (Placeholders for now) */}
+          {user?.role === 'admin' && (
+            <NavLink
+              to="/admin/dashboard"
+              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+            >
+              Admin Dashboard
+            </NavLink>
+          )}
+          {user?.role === 'librarian' && (
+            <NavLink
+              to="/librarian/dashboard"
+              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+            >
+              Librarian Hub
+            </NavLink>
+          )}
         </nav>
       )}
 
       <div className="header-actions">
         {!isAuthPage && (
           <div className="profile-dropdown-container" ref={dropdownRef}>
-            <button 
-              className="profile-icon-btn" 
+            <button
+              className="profile-icon-btn"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               aria-label="User Profile"
             >
-              <User size={28} />
+              {user?.role === 'admin' ? <ShieldUser size={28} color="#e5a00d" /> :
+                user?.role === 'librarian' ? <Library size={28} color="#2b5c8f" /> :
+                  <User size={28} />}
             </button>
-            
+
             {isDropdownOpen && (
               <div className="profile-dropdown-menu">
-                {isUserLoggedIn ? (
+                {user ? (
                   <>
+                    <div className="dropdown-header-info" style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '0.5rem' }}>
+                      <strong>{user.name}</strong>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>Role: {user.role}</div>
+                    </div>
                     <button className="dropdown-item" onClick={handleProfileClick}>
                       View Profile
                     </button>

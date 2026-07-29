@@ -2,9 +2,11 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./login.css";
 import { useState } from "react";
 import { useToast } from "../../../context/ToastContext";
+import { useAuth } from "../../../context/AuthContext";
 
 export const Login = () => {
   const { addToast } = useToast();
+  const { login } = useAuth();
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +46,11 @@ export const Login = () => {
         return;
       }
 
-      localStorage.setItem("is_user_logged_in", "true");
+      if (jsondata.user) {
+        login(jsondata.user);
+      } else {
+        localStorage.setItem("is_user_logged_in", "true");
+      }
       addToast("Logged in successfully!", "success");
       const from = location.state?.from || '/';
       navigate(from, { replace: true });

@@ -1,18 +1,19 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 export const BorrowBook = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!localStorage.getItem("is_user_logged_in"));
+    const { user, isLoading } = useAuth();
 
     useEffect(() => {
-        if (!isUserLoggedIn) {
+        if (!isLoading && !user) {
             navigate('/auth/login', { state: { from: location.pathname } });
             return;
         }
-    }, []);
+    }, [user, isLoading, navigate, location]);
 
     return (
         <>

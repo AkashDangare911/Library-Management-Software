@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { handleErrors } from "../validateFormErrors";
 import { useToast } from "../../../context/ToastContext";
+import { useAuth } from "../../../context/AuthContext";
 import "../Login/login.css"; // Reuse the login styles for the register form
 
 export const Register = () => {
   const { addToast } = useToast();
+  const { login } = useAuth();
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
@@ -47,7 +49,11 @@ export const Register = () => {
       }
 
       // store and redirect to homw
-      localStorage.setItem("is_user_logged_in", "true");
+      if (jsondata.user) {
+        login(jsondata.user);
+      } else {
+        localStorage.setItem("is_user_logged_in", "true");
+      }
       addToast("Registered successfully!", "success");
       navigate('/');
     } catch (err) {

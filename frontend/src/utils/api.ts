@@ -1,4 +1,4 @@
-const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+export const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 export const getAllBooks = async (params?: Record<string, string>) => {
   let url = `${apiUrl}/books`;

@@ -4,6 +4,7 @@ import { BooksNotFound } from './BooksNotFound';
 import { Loader } from '../Loader/Loader';
 import { getAllBooks } from '../../utils/api';
 import type { Book } from '../../utils/bookCache';
+import { useAuth } from '../../context/AuthContext';
 import "./home.css";
 
 export const Home = () => {
@@ -13,7 +14,7 @@ export const Home = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const isUserLoggedIn = !!localStorage.getItem("is_user_logged_in");
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -21,7 +22,7 @@ export const Home = () => {
         const response = await getAllBooks({ limit: "6", sort: "rating_desc" });
 
         if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("is_user_logged_in");
+          logout();
           setError("Please log in to view the library catalog.");
           return;
         }
@@ -43,9 +44,7 @@ export const Home = () => {
   }, []);
 
   const handleBorrow = (bookID: number) => {
-    const isUserLoggedIn = localStorage.getItem("is_user_logged_in") ?? '';
-
-    if (isUserLoggedIn) {
+    if (user) {
       navigate(`/books/${bookID}`);
     } else {
       navigate('/auth/login', { state: { from: `/books/${bookID}` } });
@@ -162,21 +161,21 @@ export const Home = () => {
       <section className="cta-section">
         <div className="cta-content">
           <h2 className="cta-title">
-            {isUserLoggedIn ? "Ready to Explore?" : "Ready to Start Your Journey?"}
+            {user ? "Ready to Explore?" : "Ready to Start Your Journey?"}
           </h2>
           <p className="cta-desc">
-            {isUserLoggedIn
+            {user
               ? "Dive into our vast catalog and find your next great read."
               : "Join our community of readers and gain unlimited access to our vast library of knowledge."}
           </p>
           <button
             className="hero-cta"
             onClick={() => {
-              if (isUserLoggedIn) navigate('/books');
+              if (user) navigate('/books');
               else navigate('/auth/login', { state: { from: location.pathname } });
             }}
           >
-            {isUserLoggedIn ? "View Catalogue" : "Join the Library"}
+            {user ? "View Catalogue" : "Join the Library"}
           </button>
         </div>
       </section>

@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Loader } from '../Loader/Loader';
 import { getBookByID, getFavorites, toggleFavorite } from '../../utils/api';
 import { Heart } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import "./bookDetails.css";
 
 interface Book {
@@ -25,12 +26,11 @@ export const BookDetails = () => {
   const [error, setError] = useState<{ message: string, type: "auth" | "not_found" | "generic" } | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const fetchBookDetails = async () => {
-      const token = localStorage.getItem("is_user_logged_in");
-
-      if (!token) {
+      if (!user) {
         setError({ message: "Please login first to see the contents.", type: "auth" });
         setLoading(false);
         return;
@@ -40,7 +40,7 @@ export const BookDetails = () => {
         const response = await getBookByID(bookID as string);
 
         if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("is_user_logged_in");
+          logout();
           setError({ message: "Session expired or invalid. Please login first to see the contents.", type: "auth" });
           return;
         }

@@ -38,3 +38,23 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
         });
     }
 };
+
+export const authorizeRoles = (...allowedRoles: string[]) => {
+    return (req: AuthRequest, res: Response, next: NextFunction) => {
+        if (!req.user || !req.user.role) {
+            return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                error: "Access denied. Role not found.",
+                success: false
+            });
+        }
+
+        if (!allowedRoles.includes(req.user.role)) {
+            return res.status(HTTP_STATUS.FORBIDDEN).json({
+                error: "Access denied. Insufficient permissions.",
+                success: false
+            });
+        }
+
+        next();
+    };
+};
