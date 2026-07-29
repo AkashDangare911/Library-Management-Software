@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 import { HTTP_STATUS, AUTH_MESSAGES } from "../utils/responseCodes.js";
+import { authenticateToken, type AuthRequest } from '../middlewares/authMiddleware.js';
 
 dotenv.config();
 const SALT_ROUNDS = 10;
@@ -83,6 +84,51 @@ router.post('/login', async (req: Request, res: Response) => {
 router.post('/logout', (req: Request, res: Response) => {
     res.clearCookie('auth_token');
     res.status(HTTP_STATUS.OK).json({ message: "Logged out successfully", success: true });
+});
+
+router.put('/reset-password', authenticateToken, async (req: AuthRequest, res: Response) => {
+    const userID = req.user?.id;
+    const userEmail = req.user?.userEmail;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!userID || !userEmail) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: "Unauthorized", success: false });
+    }
+
+    try {
+        // 1. Fetch current password hash from DB
+        const [rows]: any = await pool.execute("SELECT password FROM users WHERE id = ?", [userID]);
+        if (rows.length === 0) {
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ error: "User not found", success: false });
+        }
+
+        const storedHash = rows[0].password;
+
+        // 2. Compare current password
+        const isPasswordCorrect = await bcrypt.compare(currentPassword, storedHash);
+        if (!isPasswordCorrect) {
+            return res.status(HTTP_STATUS.UNAUTHORIZED).json({ error: "Incorrect current password", success: false });
+        }
+
+        // 3. Hash new password and update
+        const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+        await pool.execute("UPDATE users SET password = ? WHERE id = ?", [hashedNewPassword, userID]);
+
+        // 4. Issue a new JWT token to extend the session and keep things fresh
+        const jwt_token = jwt.sign({ id: userID, userEmail }, process.env.JWT_SECRET as string, { expiresIn: 3600 });
+        res.cookie('auth_token', jwt_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 3600000
+        });
+
+        res.status(HTTP_STATUS.OK).json({ message: "Password updated successfully", success: true });
+
+    } catch (err) {
+        console.error("Database error during password reset:", err);
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to reset password", success: false });
+    }
 });
 
 export default router;
