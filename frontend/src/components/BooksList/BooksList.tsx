@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BooksNotFound } from '../Home/BooksNotFound';
 import { Loader } from '../Loader/Loader';
 import { queryCache, setQueryCache } from '../../utils/bookCache';
-import { getAllBooks, getFavorites, toggleFavorite } from '../../utils/api';
+import { getAllBooks, getFavorites, toggleFavorite, getMyBorrowings } from '../../utils/api';
 import type { Book } from '../../utils/bookCache';
 import { Heart } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -15,6 +15,7 @@ export const BooksList = () => {
 
   const [books, setBooks] = useState<Book[]>([]);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [borrowStatusMap, setBorrowStatusMap] = useState<Record<number, string>>({});
   const [totalPages, setTotalPages] = useState(1);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isFiltering, setIsFiltering] = useState(false);
@@ -38,6 +39,20 @@ export const BooksList = () => {
           setFavorites(new Set(data));
         }
       });
+      if (user.role === 'member') {
+        getMyBorrowings().then(async (res) => {
+          if (res.ok) {
+            const data = await res.json();
+            const statusMap: Record<number, string> = {};
+            data.forEach((b: any) => {
+              if (['pending', 'accepted', 'issued', 'overdue'].includes(b.status)) {
+                statusMap[b.book_id] = b.status;
+              }
+            });
+            setBorrowStatusMap(statusMap);
+          }
+        });
+      }
     }
   }, [user]);
 
@@ -132,7 +147,7 @@ export const BooksList = () => {
     return () => clearTimeout(timeoutId);
   }, [searchTerm, categoryFilter, minRating, availableOnly, pageParam]);
 
-  const handleBorrow = (bookID: number) => {
+  const handleViewBookDetails = (bookID: number) => {
     if (user) {
       navigate(`/books/${bookID}`);
     } else {
@@ -302,9 +317,17 @@ export const BooksList = () => {
                 {book.rating && <span className="book-rating-tag">★ {book.rating}</span>}
               </div>
 
+              {borrowStatusMap[book.id] && (
+                <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                  <span className={`status-badge ${borrowStatusMap[book.id]}`} style={{ display: 'inline-block' }}>
+                    {borrowStatusMap[book.id]}
+                  </span>
+                </div>
+              )}
+
               <button
                 className="borrow-button"
-                onClick={() => handleBorrow(book.id)}
+                onClick={() => handleViewBookDetails(book.id)}
               >
                 View Details
               </button>

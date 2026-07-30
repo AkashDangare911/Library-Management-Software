@@ -100,3 +100,62 @@ a:hover {
 button, input {
   font-family: inherit;
 }
+
+/* Status Badges - Shared Globally */
+.status-badge {
+  padding: 0.3rem 0.6rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-block;
+}
+
+.status-badge.pending { background: #fef3c7; color: #d97706; }
+.status-badge.accepted { background: #dbeafe; color: #1d4ed8; }
+.status-badge.issued { background: #d1fae5; color: #047857; }
+.status-badge.returned { background: #f3f4f6; color: #4b5563; }
+.status-badge.rejected { background: #fee2e2; color: #b91c1c; }
+.status-badge.revoked { background: #fce7f3; color: #be185d; }
+.status-badge.overdue { background: #ffedd5; color: #c2410c; }
+.status-badge.cancelled { background: #f1f5f9; color: #64748b; }
+
+/* Modals - Shared Globally */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7); /* Darker overlay */
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: var(--bg-start); /* Solid opaque background */
+  padding: 2.5rem;
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  border: 1px solid var(--border-color);
+}
+
+.modal-content h3 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+}
+
+.modal-content p {
+  color: var(--text-main);
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}

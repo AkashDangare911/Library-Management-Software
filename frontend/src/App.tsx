@@ -9,6 +9,7 @@ import { BookDetails } from "./components/BookDetails/BookDetails";
 import { BooksList } from "./components/BooksList/BooksList";
 import { About } from "./components/About/About";
 import { Profile } from "./components/Profile/Profile";
+import { LibrarianDashboard } from "./components/LibrarianDashboard/LibrarianDashboard";
 import { PageNotFound } from "./components/PageNotFound/PageNotFound";
 import { ScrollToTop } from "./components/ScrollToTop";
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/librarian/dashboard" element={<LibrarianDashboard />} />
           <Route path="auth">
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />

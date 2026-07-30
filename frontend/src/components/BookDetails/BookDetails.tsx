@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Loader } from '../Loader/Loader';
-import { getBookByID, getFavorites, toggleFavorite } from '../../utils/api';
+import { getBookByID, getFavorites, toggleFavorite, requestBorrow, getMyBorrowings, cancelBorrowRequest } from '../../utils/api';
 import { Heart } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { BorrowStatus } from '../../types/BorrowStatus';
 import "./bookDetails.css";
 
 interface Book {
@@ -27,6 +29,13 @@ export const BookDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { addToast } = useToast();
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [showBorrowModal, setShowBorrowModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [activeBorrowingStatus, setActiveBorrowingStatus] = useState<string | null>(null);
+  const [activeBorrowingId, setActiveBorrowingId] = useState<number | null>(null);
+  const [activeBorrowingDueDate, setActiveBorrowingDueDate] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBookDetails = async () => {
@@ -64,6 +73,25 @@ export const BookDetails = () => {
           }
         }
 
+        // Fetch user's borrowings to see if they already requested this book
+        if (user.role === 'member') {
+          const borrowRes = await getMyBorrowings();
+          if (borrowRes.ok) {
+            const borrowData = await borrowRes.json();
+            const active = borrowData.find((b: any) => 
+              b.book_id === Number(bookID) && 
+              [BorrowStatus.PENDING, BorrowStatus.ACCEPTED, BorrowStatus.ISSUED, BorrowStatus.OVERDUE].includes(b.status as BorrowStatus)
+            );
+            if (active) {
+              setActiveBorrowingStatus(active.status);
+              setActiveBorrowingId(active.id);
+              if (active.due_date) {
+                setActiveBorrowingDueDate(active.due_date);
+              }
+            }
+          }
+        }
+
       } catch (err) {
         setError({ message: "Could not load the book details.", type: "generic" });
         console.error(err);
@@ -83,6 +111,53 @@ export const BookDetails = () => {
       }
     } catch (err) {
       console.error("Failed to toggle favorite", err);
+    }
+  };
+
+  const handleBorrowRequest = async () => {
+    if (!user) {
+      navigate('/auth/login', { state: { from: location.pathname } });
+      return;
+    }
+    
+    setIsRequesting(true);
+    try {
+      const res = await requestBorrow(Number(bookID));
+      if (res.ok) {
+        addToast("Borrow request submitted successfully! Pending librarian approval.", "success");
+        setShowBorrowModal(false);
+        navigate('/profile');
+      } else {
+        const data = await res.json();
+        addToast(data.error || "Failed to submit request", "error");
+      }
+    } catch (err) {
+      addToast("Failed to submit borrow request.", "error");
+    } finally {
+      setIsRequesting(false);
+    }
+  };
+
+  const handleCancelRequest = async () => {
+    if (!activeBorrowingId) return;
+    
+    setIsRequesting(true);
+    try {
+      const res = await cancelBorrowRequest(activeBorrowingId);
+      const data = await res.json();
+      if (res.ok) {
+        addToast("Request cancelled successfully.", 'success');
+        setActiveBorrowingStatus(null);
+        setActiveBorrowingId(null);
+        setActiveBorrowingDueDate(null);
+        setShowCancelModal(false);
+      } else {
+        addToast(data.error || "Failed to cancel request.", 'error');
+      }
+    } catch (err) {
+      addToast("Network error occurred while cancelling.", 'error');
+    } finally {
+      setIsRequesting(false);
     }
   };
 
@@ -169,14 +244,92 @@ export const BookDetails = () => {
           </div>
 
           <div className="book-details-actions">
-            <button className="borrow-btn" disabled={book.available_copies === 0}>
-              {book.available_copies > 0 ? "Confirm Borrow" : "Out of Stock"}
-            </button>
+            {(!user || user.role === 'member') && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+                {activeBorrowingStatus === BorrowStatus.ACCEPTED && (
+                  <p style={{ textAlign: 'center', fontSize: '0.95rem', color: '#10B981', fontStyle: 'italic', padding: '0.5rem 0' }}>
+                    Borrow request accepted! You can collect the book from the library counter.
+                  </p>
+                )}
+                {activeBorrowingDueDate && (
+                  <p style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-main)', fontStyle: 'italic', padding: '0.5rem 0' }}>
+                    Return Date: {new Date(activeBorrowingDueDate).toLocaleDateString()}
+                  </p>
+                )}
+                <button 
+                  className="borrow-btn" 
+                  disabled={book.available_copies === 0 || isRequesting || activeBorrowingStatus !== null}
+                  style={{ display: activeBorrowingStatus === BorrowStatus.PENDING ? 'none' : 'block' }}
+                  onClick={() => {
+                    if (!user) {
+                      navigate('/auth/login', { state: { from: location.pathname } });
+                    } else {
+                      setShowBorrowModal(true);
+                    }
+                  }}
+                >
+                  {activeBorrowingStatus 
+                    ? (
+                      activeBorrowingStatus === BorrowStatus.ACCEPTED ? "Ready for Collection" :
+                      ([BorrowStatus.ISSUED, BorrowStatus.OVERDUE].includes(activeBorrowingStatus as BorrowStatus) ? "You own the book" : 
+                      `Status: ${activeBorrowingStatus.charAt(0).toUpperCase() + activeBorrowingStatus.slice(1)}`)
+                    )
+                    : (book.available_copies > 0 ? "Request to Borrow" : "Out of Stock")}
+                </button>
+                {[BorrowStatus.PENDING, BorrowStatus.ACCEPTED].includes(activeBorrowingStatus as BorrowStatus) && (
+                  <button 
+                    className="borrow-btn" 
+                    style={{ backgroundColor: '#b91c1c' }}
+                    disabled={isRequesting}
+                    onClick={() => setShowCancelModal(true)}
+                  >
+                    {isRequesting ? "Cancelling..." : "Cancel Request"}
+                  </button>
+                )}
+              </div>
+            )}
             <button className="back-btn" onClick={() => navigate(-1)}>Back to Catalog</button>
           </div>
         </div>
 
       </div>
+
+      {showBorrowModal && (
+        <div className="modal-overlay" onClick={() => setShowBorrowModal(false)}>
+          <div className="modal-content borrow-modal" onClick={e => e.stopPropagation()}>
+            <h3>Confirm Borrow Request</h3>
+            <p>You are about to request <strong>{book.title}</strong>.</p>
+            <div className="borrow-modal-info">
+              <p>Once the librarian approves your request, the book will be reserved for <strong>24 hours</strong>.</p>
+              <p>You must physically collect the book from the library desk within this timeframe, otherwise the request will be automatically revoked.</p>
+            </div>
+            <div className="modal-actions" style={{ marginTop: '1.5rem' }}>
+              <button className="back-btn" onClick={() => setShowBorrowModal(false)} disabled={isRequesting}>Cancel</button>
+              <button className="borrow-btn" onClick={handleBorrowRequest} disabled={isRequesting}>
+                {isRequesting ? "Submitting..." : "Confirm Request"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCancelModal && (
+        <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
+          <div className="modal-content borrow-modal" onClick={e => e.stopPropagation()}>
+            <h3>Cancel Request</h3>
+            <p>Are you sure you want to cancel your request for <strong>{book.title}</strong>?</p>
+            <div className="borrow-modal-info">
+              <p>This action cannot be undone. You will lose your current place in the queue.</p>
+            </div>
+            <div className="modal-actions" style={{ marginTop: '1.5rem' }}>
+              <button className="back-btn" onClick={() => setShowCancelModal(false)} disabled={isRequesting}>Keep Request</button>
+              <button className="borrow-btn" style={{ backgroundColor: '#b91c1c' }} onClick={handleCancelRequest} disabled={isRequesting}>
+                {isRequesting ? "Cancelling..." : "Yes, Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

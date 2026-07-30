@@ -210,3 +210,22 @@
 .isbn-tag {
   color: var(--text-muted);
 }
+
+.borrow-modal-info {
+  background: rgba(15, 5, 6, 0.6);
+  padding: 1.2rem;
+  border-radius: var(--radius-md);
+  margin-top: 1.5rem;
+  border-left: 4px solid var(--primary-color);
+}
+
+.borrow-modal-info p {
+  font-size: 1rem;
+  color: var(--text-main);
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
+
+.borrow-modal-info p:last-child {
+  margin-bottom: 0;
+}
