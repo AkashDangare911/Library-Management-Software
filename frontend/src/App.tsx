@@ -10,6 +10,7 @@ import { BooksList } from "./components/BooksList/BooksList";
 import { About } from "./components/About/About";
 import { Profile } from "./components/Profile/Profile";
 import { LibrarianDashboard } from "./components/LibrarianDashboard/LibrarianDashboard";
+import { AdminDashboard } from "./components/AdminDashboard/AdminDashboard";
 import { PageNotFound } from "./components/PageNotFound/PageNotFound";
 import { ScrollToTop } from "./components/ScrollToTop";
 
@@ -24,6 +25,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/librarian/dashboard" element={<LibrarianDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="auth">
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />

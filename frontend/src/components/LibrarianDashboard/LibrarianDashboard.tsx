@@ -35,6 +35,9 @@ export const LibrarianDashboard = () => {
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
 
+  // Generic confirm modal state
+  const [confirmingAction, setConfirmingAction] = useState<{ id: number, action: 'accept' | 'issue' | 'return', userName: string } | null>(null);
+
   useEffect(() => {
     if (!isLoading && (!user || (user.role !== 'librarian' && user.role !== 'admin'))) {
       navigate('/');
@@ -75,6 +78,8 @@ export const LibrarianDashboard = () => {
       }
     } catch (err) {
       addToast("Error accepting request", "error");
+    } finally {
+      setConfirmingAction(null);
     }
   };
 
@@ -111,6 +116,8 @@ export const LibrarianDashboard = () => {
       }
     } catch (err) {
       addToast("Error issuing book", "error");
+    } finally {
+      setConfirmingAction(null);
     }
   };
 
@@ -131,6 +138,8 @@ export const LibrarianDashboard = () => {
       }
     } catch (err) {
       addToast("Error returning book", "error");
+    } finally {
+      setConfirmingAction(null);
     }
   };
 
@@ -199,15 +208,15 @@ export const LibrarianDashboard = () => {
                     <td className="action-cell">
                       {activeTab === BorrowStatus.PENDING && (
                         <>
-                          <button className="action-btn accept" onClick={() => handleAccept(b.id)}>Accept</button>
+                          <button className="action-btn accept" onClick={() => setConfirmingAction({ id: b.id, action: 'accept', userName: b.user_name })}>Accept</button>
                           <button className="action-btn reject" onClick={() => setRejectingId(b.id)}>Reject</button>
                         </>
                       )}
                       {activeTab === BorrowStatus.ACCEPTED && (
-                        <button className="action-btn issue" onClick={() => handleIssue(b.id)}>Issue Book</button>
+                        <button className="action-btn issue" onClick={() => setConfirmingAction({ id: b.id, action: 'issue', userName: b.user_name })}>Issue Book</button>
                       )}
                       {activeTab === BorrowStatus.ISSUED && (
-                        <button className="action-btn return" onClick={() => handleReturn(b.id)}>Mark Returned</button>
+                        <button className="action-btn return" onClick={() => setConfirmingAction({ id: b.id, action: 'return', userName: b.user_name })}>Mark Returned</button>
                       )}
                     </td>
                   </tr>
@@ -232,6 +241,30 @@ export const LibrarianDashboard = () => {
             <div className="modal-actions">
               <button className="action-btn cancel" onClick={() => setRejectingId(null)}>Cancel</button>
               <button className="action-btn reject" onClick={handleRejectSubmit}>Submit Rejection</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmingAction && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Confirm Action</h3>
+            <p>
+              Are you sure you want to {confirmingAction.action} the request for <strong>{confirmingAction.userName}</strong>?
+            </p>
+            <div className="modal-actions">
+              <button className="action-btn cancel" onClick={() => setConfirmingAction(null)}>Cancel</button>
+              <button 
+                className={`action-btn ${confirmingAction.action}`} 
+                onClick={() => {
+                  if (confirmingAction.action === 'accept') handleAccept(confirmingAction.id);
+                  else if (confirmingAction.action === 'issue') handleIssue(confirmingAction.id);
+                  else if (confirmingAction.action === 'return') handleReturn(confirmingAction.id);
+                }}
+              >
+                Confirm
+              </button>
             </div>
           </div>
         </div>

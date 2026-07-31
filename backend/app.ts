@@ -1,9 +1,7 @@
 import express, { type Request, type Response } from 'express';
 import pool, { connectDB } from "./db.js"; // ESM needs .js extension
 import cors from 'cors';
-import bookRoutes from './routes/bookRoutes.js';
-import authRoutes from './routes/authRoutes.js';
-import borrowRoutes from './routes/borrowRoutes.js';
+import routes from './routes/index.js';
 import * as dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
 
@@ -21,10 +19,8 @@ app.get('/', (req: Request, res: Response) => {
     res.json({ message: 'App is running' });
 });
 
-// Use the separate book routes
-app.use('/books', bookRoutes);
-app.use('/auth', authRoutes);
-app.use('/borrowings', borrowRoutes);
+// Use the central router
+app.use('/', routes);
 
 // Start the server only after connecting to the database
 connectDB().then(() => {

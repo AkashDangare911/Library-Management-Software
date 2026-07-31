@@ -89,12 +89,20 @@ function Header() {
             </NavLink>
           )}
           {user?.role === 'librarian' && (
-            <NavLink
-              to="/librarian/dashboard"
-              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-            >
-              Librarian Hub
-            </NavLink>
+            <>
+              <NavLink
+                to="/librarian/dashboard"
+                className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+              >
+                Librarian Hub
+              </NavLink>
+              <NavLink
+                to="/admin/dashboard"
+                className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+              >
+                Manage Books
+              </NavLink>
+            </>
           )}
         </nav>
       )}

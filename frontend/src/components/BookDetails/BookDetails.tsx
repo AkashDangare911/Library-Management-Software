@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Loader } from '../Loader/Loader';
 import { getBookByID, getFavorites, toggleFavorite, requestBorrow, getMyBorrowings, cancelBorrowRequest } from '../../utils/api';
+import { getBookBorrowingHistory } from '../../utils/adminApi';
 import { Heart } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -36,6 +37,7 @@ export const BookDetails = () => {
   const [activeBorrowingStatus, setActiveBorrowingStatus] = useState<string | null>(null);
   const [activeBorrowingId, setActiveBorrowingId] = useState<number | null>(null);
   const [activeBorrowingDueDate, setActiveBorrowingDueDate] = useState<string | null>(null);
+  const [borrowersList, setBorrowersList] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchBookDetails = async () => {
@@ -89,6 +91,11 @@ export const BookDetails = () => {
                 setActiveBorrowingDueDate(active.due_date);
               }
             }
+          }
+        } else if (user.role === 'admin' || user.role === 'librarian') {
+          const historyRes = await getBookBorrowingHistory(bookID as string);
+          if (historyRes.ok) {
+            setBorrowersList(await historyRes.json());
           }
         }
 
@@ -293,6 +300,39 @@ export const BookDetails = () => {
         </div>
 
       </div>
+
+      {(user?.role === 'admin' || user?.role === 'librarian') && (
+        <div className="borrowers-list-card">
+          <h3>Current Borrowers</h3>
+          {(() => {
+            const activeBorrowers = borrowersList.filter(b => ['PENDING', 'ACCEPTED', 'ISSUED', 'OVERDUE'].includes(b.status.toUpperCase()));
+            if (activeBorrowers.length === 0) {
+              return (
+                <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', marginTop: '2rem' }}>
+                  No active borrowers found for this book.
+                </p>
+              );
+            }
+            return activeBorrowers.map(b => (
+              <div key={b.id} className="borrower-item">
+                <div className="borrower-item-header">
+                  <div>
+                    <div className="borrower-name">{b.user_name}</div>
+                    <div className="borrower-email">{b.user_email}</div>
+                  </div>
+                  <span className={`status-badge ${b.status.toLowerCase()}`}>{b.status}</span>
+                </div>
+                <div className="borrower-details">
+                  <div><strong>Borrowed:</strong> {new Date(b.borrow_date).toLocaleDateString()}</div>
+                  {b.due_date && <div><strong>Due:</strong> {new Date(b.due_date).toLocaleDateString()}</div>}
+                  {b.return_date && <div><strong>Returned:</strong> {new Date(b.return_date).toLocaleDateString()}</div>}
+                  {b.penalty_amount > 0 && <div className="borrower-penalty"><strong>Penalty:</strong> ₹{b.penalty_amount}</div>}
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+      )}
 
       {showBorrowModal && (
         <div className="modal-overlay" onClick={() => setShowBorrowModal(false)}>

@@ -52,18 +52,25 @@
 }
 
 .dashboard-content {
-  background: var(--bg-secondary);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  background: transparent;
+  padding: 0;
 }
 
 .table-responsive {
+  width: 100%;
+  min-height: 400px;
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   overflow-x: auto;
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
 }
 
 .dashboard-table {
   width: 100%;
+  min-width: 1000px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -83,7 +90,7 @@
 }
 
 .dashboard-table tbody tr:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: var(--surface-hover);
 }
 
 .action-cell {

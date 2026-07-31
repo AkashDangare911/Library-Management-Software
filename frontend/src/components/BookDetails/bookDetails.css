@@ -1,9 +1,12 @@
 .book-details-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  gap: 2rem;
   min-height: calc(100vh - 120px);
   padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .book-details-card {
@@ -228,4 +231,85 @@
 
 .borrow-modal-info p:last-child {
   margin-bottom: 0;
+}
+
+.borrowers-list-card {
+  background-color: var(--surface-color);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 2rem;
+  width: 400px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+.borrowers-list-card h3 {
+  color: var(--primary-color);
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.borrower-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.borrower-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.borrower-name {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 1.1rem;
+}
+
+.borrower-email {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.borrower-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.borrower-details strong {
+  color: var(--text-main);
+}
+
+.borrower-penalty {
+  color: #EF4444 !important;
+  font-weight: 600;
+}
+
+/* Scrollbar for borrowers list */
+.borrowers-list-card::-webkit-scrollbar {
+  width: 8px;
+}
+.borrowers-list-card::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+.borrowers-list-card::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
 }

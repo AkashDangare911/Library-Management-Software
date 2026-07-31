@@ -109,6 +109,25 @@ router.get('/all', authenticateToken, authorizeRoles('librarian', 'admin'), asyn
     }
 });
 
+// Librarian: Get borrowings for a specific book
+router.get('/book/:bookId', authenticateToken, authorizeRoles('librarian', 'admin'), async (req: Request, res: Response) => {
+    try {
+        const { bookId } = req.params;
+        const query = `
+            SELECT br.*, u.name as user_name, u.email as user_email
+            FROM borrowings br
+            JOIN Users u ON br.user_id = u.id
+            WHERE br.book_id = ?
+            ORDER BY br.borrow_date DESC
+        `;
+        const [borrowings]: any = await pool.query(query, [bookId]);
+        res.status(HTTP_STATUS.OK).json(borrowings);
+    } catch (error) {
+        console.error("Error fetching book borrowings:", error);
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to fetch borrowings for book" });
+    }
+});
+
 // Librarian: Accept request
 router.put('/:id/accept', authenticateToken, authorizeRoles('librarian', 'admin'), async (req: Request, res: Response) => {
     try {

@@ -2,7 +2,7 @@ import express, { type Request, type Response } from 'express';
 import pool from '../db.js'; // Note the .js for ESM
 
 import { HTTP_STATUS, BOOK_MESSAGES } from '../utils/responseCodes.js';
-import { authenticateToken, type AuthRequest } from '../middlewares/authMiddleware.js';
+import { authenticateToken, authorizeRoles, type AuthRequest } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -134,6 +134,75 @@ router.get('/:bookID', authenticateToken, async (req: AuthRequest, res: Response
     } catch (error) {
         console.error("Error fetching books:", error);
         res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: BOOK_MESSAGES.FETCH_ERROR });
+    }
+});
+
+// POST /books - Add a new book (Admin & Librarian)
+router.post('/', authenticateToken, authorizeRoles('admin', 'librarian'), async (req: AuthRequest, res: Response) => {
+    try {
+        const { title, author, description, total_copies, isbn, category } = req.body;
+        const available_copies = total_copies; // initially all are available
+        const rating = 0; // default rating
+
+        const [result]: any = await pool.query(
+            'INSERT INTO books (title, author, description, total_copies, available_copies, isbn, category, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [title, author, description, total_copies, available_copies, isbn, category, rating]
+        );
+
+        res.status(HTTP_STATUS.CREATED).json({ message: "Book added successfully", bookId: result.insertId });
+    } catch (error) {
+        console.error("Error adding book:", error);
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to add book" });
+    }
+});
+
+// PUT /books/:bookID - Update a book (Admin & Librarian)
+router.put('/:bookID', authenticateToken, authorizeRoles('admin', 'librarian'), async (req: AuthRequest, res: Response) => {
+    try {
+        const { bookID } = req.params;
+        const { title, author, description, total_copies, isbn, category } = req.body;
+
+        // First calculate the difference in total_copies to update available_copies correctly
+        const [books]: any = await pool.query('SELECT total_copies, available_copies FROM books WHERE id = ?', [bookID]);
+        if (books.length === 0) {
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ error: "Book not found" });
+        }
+
+        const book = books[0];
+        const copiesDiff = total_copies - book.total_copies;
+        const newAvailableCopies = book.available_copies + copiesDiff;
+
+        if (newAvailableCopies < 0) {
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: "Cannot reduce total copies below currently issued copies" });
+        }
+
+        const [result]: any = await pool.query(
+            'UPDATE books SET title = ?, author = ?, description = ?, total_copies = ?, available_copies = ?, isbn = ?, category = ? WHERE id = ?',
+            [title, author, description, total_copies, newAvailableCopies, isbn, category, bookID]
+        );
+
+        res.status(HTTP_STATUS.OK).json({ message: "Book updated successfully" });
+    } catch (error) {
+        console.error("Error updating book:", error);
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to update book" });
+    }
+});
+
+// DELETE /books/:bookID - Delete a book (Admin & Librarian)
+router.delete('/:bookID', authenticateToken, authorizeRoles('admin', 'librarian'), async (req: AuthRequest, res: Response) => {
+    try {
+        const { bookID } = req.params;
+
+        const [result]: any = await pool.query('DELETE FROM books WHERE id = ?', [bookID]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ error: "Book not found" });
+        }
+
+        res.status(HTTP_STATUS.OK).json({ message: "Book deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting book:", error);
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to delete book" });
     }
 });
 
