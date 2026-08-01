@@ -2,17 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { fetchAllUsers, updateUserRole, deleteUser } from '../../../utils/adminApi';
 import { useToast } from '../../../context/ToastContext';
 import { useAuth } from '../../../context/AuthContext';
+import type { User } from '../../../types';
 
 export const Users = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
-  const [usersList, setUsersList] = useState<any[]>([]);
+  const [usersList, setUsersList] = useState<User[]>([]);
   const [userRoleFilter, setUserRoleFilter] = useState('ALL');
   const [loading, setLoading] = useState(true);
 
   // Modals
   const [deletingUser, setDeletingUser] = useState<{ id: number, name: string } | null>(null);
   const [roleChangeAction, setRoleChangeAction] = useState<{ id: number, name: string, newRole: string } | null>(null);
+
+  const handleRoleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => setUserRoleFilter(e.target.value);
+  const handleUserRoleDropdownChange = (user: User, newRole: string) => setRoleChangeAction({ id: user.id, name: user.name, newRole });
+  const handleDeleteClick = (user: User) => setDeletingUser({ id: user.id, name: user.name });
+  const cancelDelete = () => setDeletingUser(null);
+  const cancelRoleChange = () => setRoleChangeAction(null);
+  const confirmRoleChange = () => {
+    if (roleChangeAction) {
+      handleRoleChange(roleChangeAction.id, roleChangeAction.newRole);
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -71,9 +83,9 @@ export const Users = () => {
       <div className="admin-table-container">
         <div className="flex-between">
           <h2>Manage Users</h2>
-          <select 
-            value={userRoleFilter} 
-            onChange={(e) => setUserRoleFilter(e.target.value)}
+          <select
+            value={userRoleFilter}
+            onChange={handleRoleFilterChange}
             style={{ padding: '0.5rem', borderRadius: '4px', background: 'var(--bg-start)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
           >
             <option value="ALL">All Roles</option>
@@ -103,9 +115,9 @@ export const Users = () => {
                   <td>{u.name}</td>
                   <td>{u.email}</td>
                   <td>
-                    <select 
-                      value={u.role} 
-                      onChange={(e) => setRoleChangeAction({ id: u.id, name: u.name, newRole: e.target.value })}
+                    <select
+                      value={u.role}
+                      onChange={(e) => handleUserRoleDropdownChange(u, e.target.value)}
                       disabled={u.id === user?.id}
                     >
                       <option value="member">Member</option>
@@ -116,7 +128,7 @@ export const Users = () => {
                   <td>{new Date(u.created_at).toLocaleDateString()}</td>
                   <td>
                     {u.id !== user?.id && (
-                      <button className="btn-sm btn-danger" onClick={() => setDeletingUser({ id: u.id, name: u.name })}>Delete</button>
+                      <button className="btn-sm btn-danger" onClick={() => handleDeleteClick(u)}>Delete</button>
                     )}
                   </td>
                 </tr>
@@ -132,7 +144,7 @@ export const Users = () => {
             <h3>Delete User</h3>
             <p>Are you sure you want to delete <strong>{deletingUser.name}</strong> from the system? This will also remove their borrowing history and favorites.</p>
             <div className="modal-actions">
-              <button className="btn-sm" onClick={() => setDeletingUser(null)}>Cancel</button>
+              <button className="btn-sm" onClick={cancelDelete}>Cancel</button>
               <button className="btn-sm btn-danger" onClick={confirmDeleteUser}>Delete User</button>
             </div>
           </div>
@@ -145,8 +157,8 @@ export const Users = () => {
             <h3>Confirm Role Change</h3>
             <p>Are you sure you want to change <strong>{roleChangeAction.name}</strong>'s role to <strong>{roleChangeAction.newRole}</strong>?</p>
             <div className="modal-actions">
-              <button className="btn-sm" onClick={() => setRoleChangeAction(null)}>Cancel</button>
-              <button className="btn-sm btn-primary" onClick={() => handleRoleChange(roleChangeAction.id, roleChangeAction.newRole)}>Confirm Change</button>
+              <button className="btn-sm" onClick={cancelRoleChange}>Cancel</button>
+              <button className="btn-sm btn-primary" onClick={confirmRoleChange}>Confirm Change</button>
             </div>
           </div>
         </div>

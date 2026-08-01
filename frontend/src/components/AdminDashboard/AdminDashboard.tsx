@@ -14,12 +14,13 @@ export const AdminDashboard = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'ALL BOOKS' | 'ADD BOOK' | 'BORROWINGS' | 'SETTINGS'>('OVERVIEW');
+  type AdminTab = 'OVERVIEW' | 'USERS' | 'ALL BOOKS' | 'ADD BOOK' | 'BORROWINGS' | 'SETTINGS';
+  const [activeTab, setActiveTab] = useState<AdminTab>('OVERVIEW');
 
   useEffect(() => {
     if (!isLoading && (!user || (user.role !== 'admin' && user.role !== 'librarian'))) {
       navigate('/');
-    } else if (user && user.role === 'librarian' && activeTab !== 'ALL BOOKS' && activeTab !== 'ADD BOOK') {
+    } else if (user && user.role === 'librarian' && !['ALL BOOKS', 'ADD BOOK', 'BORROWINGS'].includes(activeTab)) {
       setActiveTab('ALL BOOKS');
     }
   }, [user, isLoading, navigate, activeTab]);
@@ -35,12 +36,12 @@ export const AdminDashboard = () => {
 
       <div className="admin-tabs">
         {['OVERVIEW', 'USERS', 'ALL BOOKS', 'ADD BOOK', 'BORROWINGS', 'SETTINGS']
-          .filter(tab => user.role === 'admin' || tab === 'ALL BOOKS' || tab === 'ADD BOOK')
+          .filter(tab => user.role === 'admin' || ['ALL BOOKS', 'ADD BOOK', 'BORROWINGS'].includes(tab))
           .map((tab) => (
           <button 
             key={tab}
             className={`admin-tab-btn ${activeTab === tab ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab as any)}
+            onClick={() => setActiveTab(tab as AdminTab)}
           >
             {tab}
           </button>

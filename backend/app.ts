@@ -2,6 +2,7 @@ import express, { type Request, type Response } from 'express';
 import pool, { connectDB } from "./db.js"; // ESM needs .js extension
 import cors from 'cors';
 import routes from './routes/index.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 import * as dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
 
@@ -21,6 +22,9 @@ app.get('/', (req: Request, res: Response) => {
 
 // Use the central router
 app.use('/', routes);
+
+// Centralized error handling middleware
+app.use(errorHandler);
 
 // Start the server only after connecting to the database
 connectDB().then(() => {

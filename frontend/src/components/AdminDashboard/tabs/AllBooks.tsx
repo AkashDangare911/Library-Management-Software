@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { getAllBooks } from '../../../utils/api';
 import { deleteBook } from '../../../utils/adminApi';
 import { useToast } from '../../../context/ToastContext';
+import type { Book } from '../../../types';
 
 export const AllBooks = () => {
   const { addToast } = useToast();
 
-  const [booksList, setBooksList] = useState<any[]>([]);
+  const [booksList, setBooksList] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -15,6 +16,14 @@ export const AllBooks = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [deletingBook, setDeletingBook] = useState<{ id: number, title: string } | null>(null);
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value);
+  const handleClearSearch = () => { setSearchInput(''); setSearchQuery(''); setPage(1); };
+  const handleSearchSubmit = (e: React.FormEvent) => { e.preventDefault(); setSearchQuery(searchInput); setPage(1); };
+  const handleDeleteClick = (book: Book) => setDeletingBook({ id: book.id, title: book.title });
+  const cancelDelete = () => setDeletingBook(null);
+  const handlePrevPage = () => setPage(p => Math.max(1, p - 1));
+  const handleNextPage = () => setPage(p => Math.min(totalPages, p + 1));
 
   const loadBooks = async () => {
     setLoading(true);
@@ -66,20 +75,20 @@ export const AllBooks = () => {
 
         <form
           className="search-bar"
-          onSubmit={(e) => { e.preventDefault(); setSearchQuery(searchInput); setPage(1); }}
+          onSubmit={handleSearchSubmit}
         >
           <input
             type="text"
             placeholder="Search by title, author, or ISBN..."
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={handleSearchInputChange}
           />
           <button type="submit" className="btn-sm btn-primary">Search</button>
           {searchQuery && (
             <button
               type="button"
               className="btn-sm"
-              onClick={() => { setSearchInput(''); setSearchQuery(''); setPage(1); }}
+              onClick={handleClearSearch}
             >
               Clear
             </button>
@@ -109,7 +118,7 @@ export const AllBooks = () => {
                   <td>{b.category}</td>
                   <td>{b.available_copies} / {b.total_copies}</td>
                   <td>
-                    <button className="btn-sm btn-danger" onClick={() => setDeletingBook({ id: b.id, title: b.title })}>Delete</button>
+                    <button className="btn-sm btn-danger" onClick={() => handleDeleteClick(b)}>Delete</button>
                   </td>
                 </tr>
               ))}
@@ -123,7 +132,7 @@ export const AllBooks = () => {
             <button
               className="btn-sm btn-primary"
               disabled={page === 1}
-              onClick={() => setPage(p => Math.max(1, p - 1))}
+              onClick={handlePrevPage}
               style={{ opacity: page === 1 ? 0.5 : 1 }}
             >
               Previous
@@ -132,7 +141,7 @@ export const AllBooks = () => {
             <button
               className="btn-sm btn-primary"
               disabled={page === totalPages}
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              onClick={handleNextPage}
               style={{ opacity: page === totalPages ? 0.5 : 1 }}
             >
               Next
@@ -147,7 +156,7 @@ export const AllBooks = () => {
             <h3>Delete Book</h3>
             <p>Are you sure you want to delete "<strong>{deletingBook.title}</strong>"? This will remove all copies and active reservations.</p>
             <div className="modal-actions">
-              <button className="btn-sm" onClick={() => setDeletingBook(null)}>Cancel</button>
+              <button className="btn-sm" onClick={cancelDelete}>Cancel</button>
               <button className="btn-sm btn-danger" onClick={confirmDeleteBook}>Delete Book</button>
             </div>
           </div>

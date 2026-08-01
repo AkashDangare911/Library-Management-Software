@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAdminStats } from '../../../utils/adminApi';
 import { useToast } from '../../../context/ToastContext';
+import type { AdminStats } from '../../../types';
 
 export const Overview = () => {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
 

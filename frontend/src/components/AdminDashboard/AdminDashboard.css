@@ -109,26 +109,37 @@
 
 .admin-table {
   width: 100%;
-  min-width: 900px;
-  border-collapse: collapse;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .admin-table th, .admin-table td {
-  padding: 1rem;
+  padding: 1.25rem 1rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  word-wrap: break-word;
 }
 
 .admin-table th {
-  font-weight: 600;
-  color: var(--text-muted);
+  background-color: rgba(0, 0, 0, 0.3);
+  font-weight: 700;
+  color: var(--primary-color);
   text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
 }
 
-.admin-table tr:hover {
+.admin-table th:first-child { border-top-left-radius: var(--radius-md); }
+.admin-table th:last-child { border-top-right-radius: var(--radius-md); }
+
+.admin-table tr {
+  transition: all 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
   background: var(--surface-hover);
+  box-shadow: inset 4px 0 0 var(--primary-color);
 }
 
 .admin-table select {
@@ -250,33 +261,39 @@
 .copies-counter {
   display: flex;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.2);
+  background: linear-gradient(145deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2));
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   overflow: hidden;
   width: max-content;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .copies-counter button {
-  background: var(--surface-color);
+  background: transparent;
   border: none;
-  color: var(--text-main);
-  padding: 0.75rem 1rem;
+  color: var(--primary-color);
+  padding: 0.5rem 1.25rem;
   cursor: pointer;
-  font-size: 1.2rem;
-  transition: background-color 0.2s;
+  font-size: 1.5rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
 }
 
 .copies-counter button:hover {
-  background: var(--primary-hover);
+  background: rgba(139, 38, 53, 0.2);
+  color: #fff;
 }
 
 .copies-counter .count-display {
-  padding: 0 1.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  min-width: 3rem;
+  padding: 0 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  min-width: 4rem;
   text-align: center;
+  color: var(--text-main);
+  border-left: 1px solid rgba(255,255,255,0.05);
+  border-right: 1px solid rgba(255,255,255,0.05);
 }
 
 .empty-state {

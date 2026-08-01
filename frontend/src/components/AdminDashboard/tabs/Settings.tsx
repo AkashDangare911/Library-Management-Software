@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAdminSettings, updateAdminSettings } from '../../../utils/adminApi';
 import { useToast } from '../../../context/ToastContext';
+import type { AppSettings } from '../../../types';
 
 export const Settings = () => {
   const { addToast } = useToast();
-  
-  const [settings, setSettings] = useState<any>({});
+
+  const [settings, setSettings] = useState<AppSettings>({});
   const [loading, setLoading] = useState(true);
+
+  const handlePenaltyChange = (e: React.ChangeEvent<HTMLInputElement>) => setSettings({ ...settings, daily_penalty_amount: e.target.value });
+  const handleResDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => setSettings({ ...settings, reservation_duration_hours: e.target.value });
+  const handleBorrowDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => setSettings({ ...settings, borrow_duration_days: e.target.value });
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -43,26 +48,26 @@ export const Settings = () => {
     <form className="settings-form" onSubmit={handleSettingsUpdate}>
       <div className="form-group">
         <label>Daily Penalty Amount (₹)</label>
-        <input 
-          type="number" 
-          value={settings.daily_penalty_amount || ''} 
-          onChange={e => setSettings({...settings, daily_penalty_amount: e.target.value})} 
+        <input
+          type="number"
+          value={settings.daily_penalty_amount || ''}
+          onChange={handlePenaltyChange}
         />
       </div>
       <div className="form-group">
         <label>Reservation Duration (Hours)</label>
-        <input 
-          type="number" 
-          value={settings.reservation_duration_hours || ''} 
-          onChange={e => setSettings({...settings, reservation_duration_hours: e.target.value})} 
+        <input
+          type="number"
+          value={settings.reservation_duration_hours || ''}
+          onChange={handleResDurationChange}
         />
       </div>
       <div className="form-group">
         <label>Borrow Duration (Days)</label>
-        <input 
-          type="number" 
-          value={settings.borrow_duration_days || ''} 
-          onChange={e => setSettings({...settings, borrow_duration_days: e.target.value})} 
+        <input
+          type="number"
+          value={settings.borrow_duration_days || ''}
+          onChange={handleBorrowDurationChange}
         />
       </div>
       <button type="submit" className="btn-submit">Save Settings</button>

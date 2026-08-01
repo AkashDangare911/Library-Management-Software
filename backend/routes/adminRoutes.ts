@@ -1,12 +1,12 @@
-import express, { type Request, type Response } from 'express';
+import express, { type Request, type Response, type NextFunction } from 'express';
 import pool from '../db.js';
 import { HTTP_STATUS } from '../utils/responseCodes.js';
 import { authenticateToken, authorizeRoles, type AuthRequest } from '../middlewares/authMiddleware.js';
+import { AppError } from '../utils/AppError.js';
 
 const router = express.Router();
 
-// GET /admin/stats - High-level KPIs (Admin only)
-router.get('/stats', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response) => {
+router.get('/stats', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const [userCountResult]: any = await pool.query("SELECT COUNT(*) as count FROM users WHERE role = 'member'");
         const totalUsers = userCountResult[0].count;
@@ -29,13 +29,11 @@ router.get('/stats', authenticateToken, authorizeRoles('admin'), async (req: Aut
             totalRevenue
         });
     } catch (error) {
-        console.error("Error fetching stats:", error);
-        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to fetch stats" });
+        next(error);
     }
 });
 
-// GET /admin/settings - Get settings (Admin only)
-router.get('/settings', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response) => {
+router.get('/settings', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const [rows]: any = await pool.query("SELECT setting_key, setting_value FROM settings");
         const settings = rows.reduce((acc: any, row: any) => {
@@ -44,13 +42,11 @@ router.get('/settings', authenticateToken, authorizeRoles('admin'), async (req: 
         }, {});
         res.status(HTTP_STATUS.OK).json(settings);
     } catch (error) {
-        console.error("Error fetching settings:", error);
-        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to fetch settings" });
+        next(error);
     }
 });
 
-// PUT /admin/settings - Update settings (Admin only)
-router.put('/settings', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response) => {
+router.put('/settings', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const settings = req.body;
         for (const [key, value] of Object.entries(settings)) {
@@ -61,13 +57,11 @@ router.put('/settings', authenticateToken, authorizeRoles('admin'), async (req: 
         }
         res.status(HTTP_STATUS.OK).json({ message: "Settings updated successfully" });
     } catch (error) {
-        console.error("Error updating settings:", error);
-        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to update settings" });
+        next(error);
     }
 });
 
-// GET /admin/borrowings - Get all borrowing history (Admin only)
-router.get('/borrowings', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response) => {
+router.get('/borrowings', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const query = `
             SELECT b.*, u.name as user_name, u.email as user_email, bk.title as book_title
@@ -79,8 +73,7 @@ router.get('/borrowings', authenticateToken, authorizeRoles('admin'), async (req
         const [rows]: any = await pool.query(query);
         res.status(HTTP_STATUS.OK).json(rows);
     } catch (error) {
-        console.error("Error fetching all borrowings:", error);
-        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: "Failed to fetch borrowing history" });
+        next(error);
     }
 });
 

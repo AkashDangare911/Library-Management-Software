@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { handleErrors } from "../validateFormErrors";
 import { useToast } from "../../../context/ToastContext";
 import { useAuth } from "../../../context/AuthContext";
@@ -15,6 +15,11 @@ export const Register = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setUserName(e.target.value);
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => setUserEmail(e.target.value);
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => setUserPassword(e.target.value);
+  const handleTogglePassword = () => setShowPassword(!showPassword);
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // Prevents page reload on form submit
@@ -78,7 +83,7 @@ export const Register = () => {
             id="name"
             placeholder="Enter your full name"
             value={userName}
-            onChange={(e) => { setUserName(e.target.value) }}
+            onChange={handleNameChange}
             required
           />
         </div>
@@ -89,7 +94,7 @@ export const Register = () => {
             id="email"
             placeholder="Enter your email"
             value={userEmail}
-            onChange={(e) => { setUserEmail(e.target.value) }}
+            onChange={handleEmailChange}
             required
           />
         </div>
@@ -101,13 +106,13 @@ export const Register = () => {
               id="userPassword"
               placeholder="Create a password"
               value={userPassword}
-              onChange={(e) => { setUserPassword(e.target.value) }}
+              onChange={handlePasswordChange}
               required
             />
             <button
               type="button"
               className="password-toggle"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={handleTogglePassword}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (

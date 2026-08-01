@@ -6,16 +6,17 @@ import { useAuth } from '../../context/AuthContext';
 import { getFavorites, getBookByID, resetPassword, getMyBorrowings } from '../../utils/api';
 import { BorrowStatus } from '../../types/BorrowStatus';
 import type { Book } from '../../utils/bookCache';
+import type { Borrowing } from '../../types';
 import './profile.css';
 
 export const Profile = () => {
   const { user } = useAuth();
   const isStaff = user?.role === 'admin' || user?.role === 'librarian';
-  
+
   const [activeTab, setActiveTab] = useState<'borrowings' | 'favorites' | 'security'>(isStaff ? 'favorites' : 'borrowings');
 
   const [favoriteBooks, setFavoriteBooks] = useState<Book[]>([]);
-  const [myBorrowings, setMyBorrowings] = useState<any[]>([]);
+  const [myBorrowings, setMyBorrowings] = useState<Borrowing[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { addToast } = useToast();
@@ -31,6 +32,18 @@ export const Profile = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleCurrentPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value);
+  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value);
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value);
+
+  const toggleCurrentPassword = () => setShowCurrentPassword(prev => !prev);
+  const toggleNewPassword = () => setShowNewPassword(prev => !prev);
+  const toggleConfirmPassword = () => setShowConfirmPassword(prev => !prev);
+
+  const handleNavigateToBook = (bookId: number) => navigate(`/books/${bookId}`);
+  const handleBrowseBooks = () => navigate('/books');
+  const handleTabChange = (tab: 'borrowings' | 'favorites' | 'security') => setActiveTab(tab);
 
   useEffect(() => {
     const fetchFavoriteBooks = async () => {
@@ -135,20 +148,20 @@ export const Profile = () => {
           {!isStaff && (
             <button
               className={`sidebar-btn ${activeTab === 'borrowings' ? 'active' : ''}`}
-              onClick={() => setActiveTab('borrowings')}
+              onClick={() => handleTabChange('borrowings')}
             >
               <BookOpen size={20} /> My Borrowings
             </button>
           )}
           <button
             className={`sidebar-btn ${activeTab === 'favorites' ? 'active' : ''}`}
-            onClick={() => setActiveTab('favorites')}
+            onClick={() => handleTabChange('favorites')}
           >
             <Heart size={20} /> My Favorites
           </button>
           <button
             className={`sidebar-btn ${activeTab === 'security' ? 'active' : ''}`}
-            onClick={() => setActiveTab('security')}
+            onClick={() => handleTabChange('security')}
           >
             <Lock size={20} /> Security & Password
           </button>
@@ -173,7 +186,7 @@ export const Profile = () => {
                       {myBorrowings.filter(b => [BorrowStatus.ISSUED, BorrowStatus.OVERDUE].includes(b.status as BorrowStatus)).map((b) => (
                         <div key={b.id} className="borrowing-card">
                           <div className="borrowing-card-header">
-                            <h3 style={{ cursor: 'pointer' }} onClick={() => navigate(`/books/${b.book_id}`)}>{b.title}</h3>
+                            <h3 style={{ cursor: 'pointer' }} onClick={() => handleNavigateToBook(b.book_id)}>{b.title}</h3>
                             <span className={`status-badge ${b.status}`}>
                               {b.status}
                             </span>
@@ -198,7 +211,7 @@ export const Profile = () => {
                       {myBorrowings.filter(b => [BorrowStatus.PENDING, BorrowStatus.ACCEPTED].includes(b.status as BorrowStatus)).map((b) => (
                         <div key={b.id} className="borrowing-card">
                           <div className="borrowing-card-header">
-                            <h3 style={{ cursor: 'pointer' }} onClick={() => navigate(`/books/${b.book_id}`)}>{b.title}</h3>
+                            <h3 style={{ cursor: 'pointer' }} onClick={() => handleNavigateToBook(b.book_id)}>{b.title}</h3>
                             <span className={`status-badge ${b.status}`}>
                               {b.status}
                             </span>
@@ -219,7 +232,7 @@ export const Profile = () => {
                       {myBorrowings.filter(b => [BorrowStatus.RETURNED, BorrowStatus.REJECTED, BorrowStatus.REVOKED, BorrowStatus.CANCELLED].includes(b.status as BorrowStatus)).map((b) => (
                         <div key={b.id} className="borrowing-card">
                           <div className="borrowing-card-header">
-                            <h3 style={{ cursor: 'pointer' }} onClick={() => navigate(`/books/${b.book_id}`)}>{b.title}</h3>
+                            <h3 style={{ cursor: 'pointer' }} onClick={() => handleNavigateToBook(b.book_id)}>{b.title}</h3>
                             <span className={`status-badge ${b.status}`}>
                               {b.status}
                             </span>
@@ -242,7 +255,7 @@ export const Profile = () => {
             ) : (
               <div className="profile-placeholder">
                 <p>You haven't requested any books yet.</p>
-                <button className="borrow-btn" onClick={() => navigate('/books')} style={{ marginTop: '1rem' }}>Browse Books</button>
+                <button className="borrow-btn" onClick={handleBrowseBooks} style={{ marginTop: '1rem' }}>Browse Books</button>
               </div>
             )}
           </div>
@@ -258,7 +271,7 @@ export const Profile = () => {
             ) : favoriteBooks.length > 0 ? (
               <div className="favorites-grid">
                 {favoriteBooks.map((book) => (
-                  <div key={book.id} className="favorite-card" onClick={() => navigate(`/books/${book.id}`)}>
+                  <div key={book.id} className="favorite-card" onClick={() => handleNavigateToBook(book.id)}>
                     <h3>{book.title}</h3>
                     <p>By {book.author}</p>
                     <div className="favorite-card-meta">
@@ -272,7 +285,7 @@ export const Profile = () => {
               <div className="profile-placeholder">
                 <p>You haven't favorited any books yet.</p>
                 <p>Head over to the catalog to discover your next great read!</p>
-                <button className="borrow-btn" onClick={() => navigate('/books')} style={{ marginTop: '1rem' }}>Browse Books</button>
+                <button className="borrow-btn" onClick={handleBrowseBooks} style={{ marginTop: '1rem' }}>Browse Books</button>
               </div>
             )}
           </div>
@@ -296,10 +309,10 @@ export const Profile = () => {
                   <input
                     type={showCurrentPassword ? "text" : "password"}
                     value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    onChange={handleCurrentPasswordChange}
                     placeholder="Enter current password"
                   />
-                  <button type="button" className="eye-btn" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+                  <button type="button" className="eye-btn" onClick={toggleCurrentPassword}>
                     {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
@@ -311,10 +324,10 @@ export const Profile = () => {
                   <input
                     type={showNewPassword ? "text" : "password"}
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    onChange={handleNewPasswordChange}
                     placeholder="Enter new password"
                   />
-                  <button type="button" className="eye-btn" onClick={() => setShowNewPassword(!showNewPassword)}>
+                  <button type="button" className="eye-btn" onClick={toggleNewPassword}>
                     {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
@@ -326,10 +339,10 @@ export const Profile = () => {
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={handleConfirmPasswordChange}
                     placeholder="Re-enter new password"
                   />
-                  <button type="button" className="eye-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <button type="button" className="eye-btn" onClick={toggleConfirmPassword}>
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>

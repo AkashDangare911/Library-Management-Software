@@ -10,9 +10,13 @@ export const Login = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<any>("");
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => setUserEmail(e.target.value);
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => setUserPassword(e.target.value);
+  const handleTogglePassword = () => setShowPassword(!showPassword);
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -78,7 +82,7 @@ export const Login = () => {
             id="email"
             placeholder="Enter your email"
             value={userEmail}
-            onChange={(e) => { setUserEmail(e.target.value) }}
+            onChange={handleEmailChange}
             required
           />
         </div>
@@ -90,13 +94,13 @@ export const Login = () => {
               id="password"
               placeholder="Enter your password"
               value={userPassword}
-              onChange={(e) => { setUserPassword(e.target.value) }}
+              onChange={handlePasswordChange}
               required
             />
             <button
               type="button"
               className="password-toggle"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={handleTogglePassword}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (

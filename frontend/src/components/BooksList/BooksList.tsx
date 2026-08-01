@@ -5,6 +5,7 @@ import { Loader } from '../Loader/Loader';
 import { queryCache, setQueryCache } from '../../utils/bookCache';
 import { getAllBooks, getFavorites, toggleFavorite, getMyBorrowings } from '../../utils/api';
 import type { Book } from '../../utils/bookCache';
+import type { Borrowing } from '../../types';
 import { Heart } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import "./booksList.css";
@@ -44,7 +45,7 @@ export const BooksList = () => {
           if (res.ok) {
             const data = await res.json();
             const statusMap: Record<number, string> = {};
-            data.forEach((b: any) => {
+            data.forEach((b: Borrowing) => {
               if (['pending', 'accepted', 'issued', 'overdue'].includes(b.status)) {
                 statusMap[b.book_id] = b.status;
               }
@@ -55,6 +56,11 @@ export const BooksList = () => {
       }
     }
   }, [user]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => updateFilter("search", e.target.value);
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => updateFilter("category", e.target.value);
+  const handleRatingChange = (e: React.ChangeEvent<HTMLSelectElement>) => updateFilter("rating", e.target.value);
+  const handleAvailableChange = (e: React.ChangeEvent<HTMLInputElement>) => updateFilter("available", e.target.checked);
 
   // Helper to update filters and reset page to 1
   const updateFilter = (key: string, value: string | boolean) => {
@@ -243,12 +249,12 @@ export const BooksList = () => {
           type="text"
           placeholder="Search by title, author, or ISBN..."
           value={searchTerm}
-          onChange={(e) => updateFilter("search", e.target.value)}
+          onChange={handleSearchChange}
           className="filter-input search-input"
         />
         <select
           value={categoryFilter}
-          onChange={(e) => updateFilter("category", e.target.value)}
+          onChange={handleCategoryChange}
           className="filter-input"
         >
           <option value="">All Categories</option>
@@ -262,7 +268,7 @@ export const BooksList = () => {
         </select>
         <select
           value={minRating}
-          onChange={(e) => updateFilter("rating", e.target.value)}
+          onChange={handleRatingChange}
           className="filter-input"
         >
           <option value="">Any Rating</option>
@@ -274,7 +280,7 @@ export const BooksList = () => {
           <input
             type="checkbox"
             checked={availableOnly}
-            onChange={(e) => updateFilter("available", e.target.checked)}
+            onChange={handleAvailableChange}
           />
           Available Only
         </label>
