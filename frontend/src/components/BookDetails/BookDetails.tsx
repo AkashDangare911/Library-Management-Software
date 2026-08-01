@@ -7,6 +7,7 @@ import { Heart } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { BorrowStatus } from '../../types/BorrowStatus';
+import { ReviewSection } from './ReviewSection';
 import "./bookDetails.css";
 
 interface Book {
@@ -38,6 +39,7 @@ export const BookDetails = () => {
   const [activeBorrowingId, setActiveBorrowingId] = useState<number | null>(null);
   const [activeBorrowingDueDate, setActiveBorrowingDueDate] = useState<string | null>(null);
   const [borrowersList, setBorrowersList] = useState<any[]>([]);
+  const [hasBorrowed, setHasBorrowed] = useState(false);
 
   useEffect(() => {
     const fetchBookDetails = async () => {
@@ -91,6 +93,12 @@ export const BookDetails = () => {
                 setActiveBorrowingDueDate(active.due_date);
               }
             }
+
+            const hasBorrowedBook = borrowData.some((b: any) => 
+              b.book_id === Number(bookID) && 
+              [BorrowStatus.ISSUED, BorrowStatus.RETURNED, BorrowStatus.OVERDUE].includes(b.status as BorrowStatus)
+            );
+            setHasBorrowed(hasBorrowedBook);
           }
         } else if (user.role === 'admin' || user.role === 'librarian') {
           const historyRes = await getBookBorrowingHistory(bookID as string);
@@ -333,6 +341,8 @@ export const BookDetails = () => {
           })()}
         </div>
       )}
+
+      <ReviewSection bookId={Number(bookID)} hasBorrowed={hasBorrowed} />
 
       {showBorrowModal && (
         <div className="modal-overlay" onClick={() => setShowBorrowModal(false)}>

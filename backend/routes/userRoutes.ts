@@ -38,7 +38,7 @@ router.put('/:id/role', authenticateToken, authorizeRoles('admin'), async (req: 
 
 router.delete('/:id', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
 
         if (req.user?.id === parseInt(id)) {
             return next(new AppError("Cannot delete your own account", HTTP_STATUS.BAD_REQUEST));

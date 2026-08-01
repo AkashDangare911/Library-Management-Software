@@ -28,7 +28,7 @@ export const AllBooks = () => {
   const loadBooks = async () => {
     setLoading(true);
     try {
-      const res = await getAllBooks({ page, limit: 10, search: searchQuery });
+      const res = await getAllBooks({ page: String(page), limit: '10', search: searchQuery });
       if (res.ok) {
         const data = await res.json();
         setBooksList(data.books || data);

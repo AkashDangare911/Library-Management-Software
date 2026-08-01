@@ -66,3 +66,15 @@ export const BORROW_MESSAGES = {
     CANCEL_SUCCESS: "Request cancelled successfully",
     CANCEL_ERROR: "Failed to cancel request",
 };
+
+export const REVIEW_MESSAGES = {
+    NOT_BORROWED: "You can only review books you have borrowed.",
+    REVIEW_EXISTS: "You have already reviewed this book.",
+    ADD_SUCCESS: "Review added successfully.",
+    ADD_ERROR: "Failed to add review.",
+    FETCH_ERROR: "Failed to fetch reviews.",
+    NOT_FOUND: "Review not found.",
+    DELETE_SUCCESS: "Review deleted successfully.",
+    DELETE_ERROR: "Failed to delete review.",
+    UNAUTHORIZED: "You are not authorized to perform this action.",
+};

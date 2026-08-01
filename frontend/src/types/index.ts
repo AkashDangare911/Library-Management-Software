@@ -16,6 +16,7 @@ export interface Book {
   published_date: string;
   total_copies: number;
   available_copies: number;
+  rating?: number;
   created_at: string;
   updated_at: string;
 }
@@ -27,10 +28,14 @@ export interface Borrowing {
   borrow_date: string;
   return_date: string | null;
   status: 'pending' | 'accepted' | 'issued' | 'returned' | 'rejected' | 'revoked' | 'overdue';
-  penalty_amount: string | number;
+  penalty_amount: number;
   user_name?: string;
   user_email?: string;
   book_title?: string;
+  title?: string;
+  author?: string;
+  due_date?: string;
+  rejection_reason?: string;
 }
 
 export interface AdminStats {
@@ -45,4 +50,16 @@ export interface AppSettings {
   daily_penalty_amount?: string | number;
   reservation_duration_hours?: string | number;
   borrow_duration_days?: string | number;
+}
+
+export interface Review {
+  id: number;
+  user_id: number;
+  book_id: number;
+  rating: number;
+  comment: string;
+  created_at: string;
+  user_name?: string;
+  book_title?: string;
+  book_author?: string;
 }
