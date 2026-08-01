@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 import { BorrowStatus } from '../../types/BorrowStatus';
+import { GenericModal } from '../common/GenericModal';
 import './librarianDashboard.css';
 
 interface Borrowing {
@@ -227,48 +228,46 @@ export const LibrarianDashboard = () => {
         )}
       </div>
 
-      {rejectingId && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Reject Borrow Request</h3>
-            <p>Please provide a reason for rejecting this request.</p>
-            <textarea 
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="E.g., Book is currently reserved for faculty..."
-              className="modal-textarea"
-            />
-            <div className="modal-actions">
-              <button className="action-btn cancel" onClick={() => setRejectingId(null)}>Cancel</button>
-              <button className="action-btn reject" onClick={handleRejectSubmit}>Submit Rejection</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Reject Modal */}
+      <GenericModal
+        isOpen={!!rejectingId}
+        onClose={() => setRejectingId(null)}
+        title="Reject Borrow Request"
+        onConfirm={handleRejectSubmit}
+        confirmText="Submit Rejection"
+        confirmButtonClass="action-btn reject"
+        cancelButtonClass="action-btn cancel"
+      >
+        <p>Please provide a reason for rejecting this request.</p>
+        <textarea 
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+          placeholder="E.g., Book is currently reserved for faculty..."
+          className="modal-textarea"
+        />
+      </GenericModal>
 
-      {confirmingAction && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Confirm Action</h3>
-            <p>
-              Are you sure you want to {confirmingAction.action} the request for <strong>{confirmingAction.userName}</strong>?
-            </p>
-            <div className="modal-actions">
-              <button className="action-btn cancel" onClick={() => setConfirmingAction(null)}>Cancel</button>
-              <button 
-                className={`action-btn ${confirmingAction.action}`} 
-                onClick={() => {
-                  if (confirmingAction.action === 'accept') handleAccept(confirmingAction.id);
-                  else if (confirmingAction.action === 'issue') handleIssue(confirmingAction.id);
-                  else if (confirmingAction.action === 'return') handleReturn(confirmingAction.id);
-                }}
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Confirm Action Modal */}
+      <GenericModal
+        isOpen={!!confirmingAction}
+        onClose={() => setConfirmingAction(null)}
+        title="Confirm Action"
+        onConfirm={() => {
+          if (confirmingAction) {
+            if (confirmingAction.action === 'accept') handleAccept(confirmingAction.id);
+            else if (confirmingAction.action === 'issue') handleIssue(confirmingAction.id);
+            else if (confirmingAction.action === 'return') handleReturn(confirmingAction.id);
+          }
+          setConfirmingAction(null);
+        }}
+        confirmText={`Confirm ${confirmingAction?.action}`}
+        confirmButtonClass={`action-btn ${confirmingAction?.action}`}
+        cancelButtonClass="action-btn cancel"
+      >
+        <p>
+          Are you sure you want to {confirmingAction?.action} the request for <strong>{confirmingAction?.userName}</strong>?
+        </p>
+      </GenericModal>
     </div>
   );
 };

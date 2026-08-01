@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchAllUsers, updateUserRole, deleteUser } from '../../../utils/adminApi';
 import { useToast } from '../../../context/ToastContext';
 import { useAuth } from '../../../context/AuthContext';
+import { GenericModal } from '../../common/GenericModal';
 import type { User } from '../../../types';
 
 export const Users = () => {
@@ -139,29 +140,31 @@ export const Users = () => {
       </div>
 
       {deletingUser && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Delete User</h3>
-            <p>Are you sure you want to delete <strong>{deletingUser.name}</strong> from the system? This will also remove their borrowing history and favorites.</p>
-            <div className="modal-actions">
-              <button className="btn-sm" onClick={cancelDelete}>Cancel</button>
-              <button className="btn-sm btn-danger" onClick={confirmDeleteUser}>Delete User</button>
-            </div>
-          </div>
-        </div>
+        <GenericModal
+          isOpen={!!deletingUser}
+          onClose={cancelDelete}
+          title="Delete User"
+          onConfirm={confirmDeleteUser}
+          confirmText="Delete User"
+          confirmButtonClass="btn-sm btn-danger"
+          cancelButtonClass="btn-sm"
+        >
+          <p>Are you sure you want to delete <strong>{deletingUser.name}</strong> from the system? This will also remove their borrowing history and favorites.</p>
+        </GenericModal>
       )}
 
       {roleChangeAction && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Confirm Role Change</h3>
-            <p>Are you sure you want to change <strong>{roleChangeAction.name}</strong>'s role to <strong>{roleChangeAction.newRole}</strong>?</p>
-            <div className="modal-actions">
-              <button className="btn-sm" onClick={cancelRoleChange}>Cancel</button>
-              <button className="btn-sm btn-primary" onClick={confirmRoleChange}>Confirm Change</button>
-            </div>
-          </div>
-        </div>
+        <GenericModal
+          isOpen={!!roleChangeAction}
+          onClose={cancelRoleChange}
+          title="Confirm Role Change"
+          onConfirm={confirmRoleChange}
+          confirmText="Confirm Change"
+          confirmButtonClass="btn-sm btn-primary"
+          cancelButtonClass="btn-sm"
+        >
+          <p>Are you sure you want to change <strong>{roleChangeAction.name}</strong>'s role to <strong>{roleChangeAction.newRole}</strong>?</p>
+        </GenericModal>
       )}
     </>
   );

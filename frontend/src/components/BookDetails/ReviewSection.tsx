@@ -3,6 +3,7 @@ import { Star, Trash2 } from 'lucide-react';
 import { fetchReviewsByBook, addReview, deleteReview } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { GenericModal } from '../common/GenericModal';
 import type { Review } from '../../types';
 
 interface ReviewSectionProps {
@@ -202,18 +203,17 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ bookId, hasBorrowe
       )}
 
       {/* Delete Confirmation Modal */}
-      {deletingReviewId && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Delete Review</h3>
-            <p>Are you sure you want to delete this review? This action cannot be undone.</p>
-            <div className="modal-actions" style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-              <button className="back-btn" onClick={cancelDelete} style={{ padding: '0.5rem 1rem' }}>Cancel</button>
-              <button className="borrow-btn" style={{ backgroundColor: '#ef4444', padding: '0.5rem 1rem' }} onClick={confirmDelete}>Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <GenericModal
+        isOpen={!!deletingReviewId}
+        onClose={cancelDelete}
+        title="Delete Review"
+        onConfirm={confirmDelete}
+        confirmText="Delete"
+        confirmButtonClass="borrow-btn"
+        cancelButtonClass="back-btn"
+      >
+        <p>Are you sure you want to delete this review? This action cannot be undone.</p>
+      </GenericModal>
     </details>
   );
 };

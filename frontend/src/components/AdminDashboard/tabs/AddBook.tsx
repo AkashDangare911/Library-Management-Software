@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { addBook } from '../../../utils/adminApi';
 import { useToast } from '../../../context/ToastContext';
+import { GenericModal } from '../../common/GenericModal';
 
 interface AddBookProps {
   onSuccess: () => void;
@@ -86,16 +87,17 @@ export const AddBook: React.FC<AddBookProps> = ({ onSuccess }) => {
       </form>
 
       {confirmingAddBook && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Confirm Book Addition</h3>
-            <p>Are you sure you want to add <strong>{newBook.title}</strong> to the library catalog with <strong>{newBook.total_copies}</strong> copies?</p>
-            <div className="modal-actions">
-              <button className="btn-sm" onClick={cancelAddBook}>Cancel</button>
-              <button className="btn-sm btn-primary" onClick={confirmAddBook}>Add Book</button>
-            </div>
-          </div>
-        </div>
+        <GenericModal
+          isOpen={confirmingAddBook}
+          onClose={cancelAddBook}
+          title="Confirm Book Addition"
+          onConfirm={confirmAddBook}
+          confirmText="Add Book"
+          confirmButtonClass="btn-sm btn-primary"
+          cancelButtonClass="btn-sm"
+        >
+          <p>Are you sure you want to add <strong>{newBook.title}</strong> to the library catalog with <strong>{newBook.total_copies}</strong> copies?</p>
+        </GenericModal>
       )}
     </>
   );

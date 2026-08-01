@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getAllBooks } from '../../../utils/api';
 import { deleteBook } from '../../../utils/adminApi';
 import { useToast } from '../../../context/ToastContext';
+import { GenericModal } from '../../common/GenericModal';
 import type { Book } from '../../../types';
 
 export const AllBooks = () => {
@@ -151,16 +152,17 @@ export const AllBooks = () => {
       </div>
 
       {deletingBook && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Delete Book</h3>
-            <p>Are you sure you want to delete "<strong>{deletingBook.title}</strong>"? This will remove all copies and active reservations.</p>
-            <div className="modal-actions">
-              <button className="btn-sm" onClick={cancelDelete}>Cancel</button>
-              <button className="btn-sm btn-danger" onClick={confirmDeleteBook}>Delete Book</button>
-            </div>
-          </div>
-        </div>
+        <GenericModal
+          isOpen={!!deletingBook}
+          onClose={cancelDelete}
+          title="Delete Book"
+          onConfirm={confirmDeleteBook}
+          confirmText="Delete Book"
+          confirmButtonClass="btn-sm btn-danger"
+          cancelButtonClass="btn-sm"
+        >
+          <p>Are you sure you want to delete "<strong>{deletingBook.title}</strong>"? This will remove all copies and active reservations.</p>
+        </GenericModal>
       )}
     </>
   );

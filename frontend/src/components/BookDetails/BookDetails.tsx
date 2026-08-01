@@ -8,6 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { BorrowStatus } from '../../types/BorrowStatus';
 import { ReviewSection } from './ReviewSection';
+import { GenericModal } from '../common/GenericModal';
+
 import "./bookDetails.css";
 
 interface Book {
@@ -345,40 +347,38 @@ export const BookDetails = () => {
       <ReviewSection bookId={Number(bookID)} hasBorrowed={hasBorrowed} />
 
       {showBorrowModal && (
-        <div className="modal-overlay" onClick={() => setShowBorrowModal(false)}>
-          <div className="modal-content borrow-modal" onClick={e => e.stopPropagation()}>
-            <h3>Confirm Borrow Request</h3>
-            <p>You are about to request <strong>{book.title}</strong>.</p>
-            <div className="borrow-modal-info">
-              <p>Once the librarian approves your request, the book will be reserved for <strong>24 hours</strong>.</p>
-              <p>You must physically collect the book from the library desk within this timeframe, otherwise the request will be automatically revoked.</p>
-            </div>
-            <div className="modal-actions" style={{ marginTop: '1.5rem' }}>
-              <button className="back-btn" onClick={() => setShowBorrowModal(false)} disabled={isRequesting}>Cancel</button>
-              <button className="borrow-btn" onClick={handleBorrowRequest} disabled={isRequesting}>
-                {isRequesting ? "Submitting..." : "Confirm Request"}
-              </button>
-            </div>
+        <GenericModal
+          isOpen={showBorrowModal}
+          onClose={() => setShowBorrowModal(false)}
+          title="Confirm Borrow Request"
+          onConfirm={handleBorrowRequest}
+          confirmText={isRequesting ? "Submitting..." : "Confirm Request"}
+          isConfirmDisabled={isRequesting}
+        >
+          <p>You are about to request <strong>{book.title}</strong>.</p>
+          <div className="borrow-modal-info">
+            <p>Once the librarian approves your request, the book will be reserved for <strong>24 hours</strong>.</p>
+            <p>You must physically collect the book from the library desk within this timeframe, otherwise the request will be automatically revoked.</p>
           </div>
-        </div>
+        </GenericModal>
       )}
 
       {showCancelModal && (
-        <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
-          <div className="modal-content borrow-modal" onClick={e => e.stopPropagation()}>
-            <h3>Cancel Request</h3>
-            <p>Are you sure you want to cancel your request for <strong>{book.title}</strong>?</p>
-            <div className="borrow-modal-info">
-              <p>This action cannot be undone. You will lose your current place in the queue.</p>
-            </div>
-            <div className="modal-actions" style={{ marginTop: '1.5rem' }}>
-              <button className="back-btn" onClick={() => setShowCancelModal(false)} disabled={isRequesting}>Keep Request</button>
-              <button className="borrow-btn" style={{ backgroundColor: '#b91c1c' }} onClick={handleCancelRequest} disabled={isRequesting}>
-                {isRequesting ? "Cancelling..." : "Yes, Cancel"}
-              </button>
-            </div>
+        <GenericModal
+          isOpen={showCancelModal}
+          onClose={() => setShowCancelModal(false)}
+          title="Cancel Request"
+          onConfirm={handleCancelRequest}
+          confirmText={isRequesting ? "Cancelling..." : "Yes, Cancel"}
+          confirmButtonClass="borrow-btn"
+          cancelText="Keep Request"
+          isConfirmDisabled={isRequesting}
+        >
+          <p>Are you sure you want to cancel your request for <strong>{book.title}</strong>?</p>
+          <div className="borrow-modal-info">
+            <p>This action cannot be undone. You will lose your current place in the queue.</p>
           </div>
-        </div>
+        </GenericModal>
       )}
     </div>
   );

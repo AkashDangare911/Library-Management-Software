@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchMyReviews, deleteReview } from '../../../utils/api';
 import { useToast } from '../../../context/ToastContext';
 
+import { GenericModal } from '../../common/GenericModal';
+
 export const ReviewsTab = () => {
   const [myReviews, setMyReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,18 +103,17 @@ export const ReviewsTab = () => {
       )}
 
       {/* Delete Confirmation Modal */}
-      {deletingReviewId && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Delete Review</h3>
-            <p>Are you sure you want to delete this review? This action cannot be undone.</p>
-            <div className="modal-actions" style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
-              <button className="back-btn" onClick={cancelDeleteReview} style={{ padding: '0.5rem 1rem' }}>Cancel</button>
-              <button className="borrow-btn" style={{ backgroundColor: '#ef4444', padding: '0.5rem 1rem' }} onClick={confirmDeleteReview}>Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <GenericModal
+        isOpen={!!deletingReviewId}
+        onClose={cancelDeleteReview}
+        title="Delete Review"
+        onConfirm={confirmDeleteReview}
+        confirmText="Delete"
+        confirmButtonClass="borrow-btn"
+        cancelButtonClass="back-btn"
+      >
+        <p>Are you sure you want to delete this review? This action cannot be undone.</p>
+      </GenericModal>
     </div>
   );
 };
