@@ -4,6 +4,8 @@ import { authenticateToken, authorizeRoles, type AuthRequest } from '../middlewa
 import { HTTP_STATUS, BORROW_MESSAGES, BOOK_MESSAGES } from '../utils/responseCodes.js';
 import { BorrowStatus } from '../types/BorrowStatus.js';
 import { AppError } from '../utils/AppError.js';
+import { sendEmail } from '../utils/emailService.js';
+import { BorrowStatusEmail } from '../emails/BorrowStatusEmail.js';
 
 const router = express.Router();
 
@@ -120,7 +122,12 @@ router.put('/:id/accept', authenticateToken, authorizeRoles('librarian', 'admin'
     try {
         const { id } = req.params;
 
-        const [borrowing]: any = await pool.query("SELECT book_id, status FROM borrowings WHERE id = ?", [id]);
+        const [borrowing]: any = await pool.query(`
+            SELECT br.book_id, br.status, u.email, u.name, b.title 
+            FROM borrowings br 
+            JOIN users u ON br.user_id = u.id 
+            JOIN books b ON br.book_id = b.id 
+            WHERE br.id = ?`, [id]);
         if (borrowing.length === 0) return next(new AppError(BORROW_MESSAGES.NOT_FOUND, HTTP_STATUS.NOT_FOUND));
         if (borrowing[0].status !== BorrowStatus.PENDING) return next(new AppError(BORROW_MESSAGES.ONLY_PENDING_ACCEPT, HTTP_STATUS.BAD_REQUEST));
 
@@ -137,6 +144,12 @@ router.put('/:id/accept', authenticateToken, authorizeRoles('librarian', 'admin'
             [BorrowStatus.ACCEPTED, id]
         );
 
+        sendEmail(
+            borrowing[0].email,
+            'Borrow Request Approved! 🎉',
+            BorrowStatusEmail({ userName: borrowing[0].name, bookTitle: borrowing[0].title, status: 'approved' })
+        );
+
         res.status(HTTP_STATUS.OK).json({ message: BORROW_MESSAGES.ACCEPT_SUCCESS });
     } catch (error) {
         next(new AppError(BORROW_MESSAGES.ACCEPT_ERROR, HTTP_STATUS.INTERNAL_SERVER_ERROR));
@@ -148,13 +161,29 @@ router.put('/:id/reject', authenticateToken, authorizeRoles('librarian', 'admin'
         const { id } = req.params;
         const { reason } = req.body;
 
-        const [borrowing]: any = await pool.query("SELECT status FROM borrowings WHERE id = ?", [id]);
+        const [borrowing]: any = await pool.query(`
+            SELECT br.status, u.email, u.name, b.title 
+            FROM borrowings br 
+            JOIN users u ON br.user_id = u.id 
+            JOIN books b ON br.book_id = b.id 
+            WHERE br.id = ?`, [id]);
         if (borrowing.length === 0) return next(new AppError(BORROW_MESSAGES.NOT_FOUND, HTTP_STATUS.NOT_FOUND));
         if (borrowing[0].status !== BorrowStatus.PENDING) return next(new AppError(BORROW_MESSAGES.ONLY_PENDING_REJECT, HTTP_STATUS.BAD_REQUEST));
 
         await pool.query(
             "UPDATE borrowings SET status = ?, rejection_reason = ? WHERE id = ?",
             [BorrowStatus.REJECTED, reason || null, id]
+        );
+
+        sendEmail(
+            borrowing[0].email,
+            'Borrow Request Rejected',
+            BorrowStatusEmail({ 
+                userName: borrowing[0].name, 
+                bookTitle: borrowing[0].title, 
+                status: 'rejected',
+                reason: reason || undefined
+            })
         );
 
         res.status(HTTP_STATUS.OK).json({ message: BORROW_MESSAGES.REJECT_SUCCESS });
@@ -167,13 +196,24 @@ router.put('/:id/issue', authenticateToken, authorizeRoles('librarian', 'admin')
     try {
         const { id } = req.params;
 
-        const [borrowing]: any = await pool.query("SELECT status FROM borrowings WHERE id = ?", [id]);
+        const [borrowing]: any = await pool.query(`
+            SELECT br.status, u.email, u.name, b.title 
+            FROM borrowings br 
+            JOIN users u ON br.user_id = u.id 
+            JOIN books b ON br.book_id = b.id 
+            WHERE br.id = ?`, [id]);
         if (borrowing.length === 0) return next(new AppError(BORROW_MESSAGES.NOT_FOUND, HTTP_STATUS.NOT_FOUND));
         if (borrowing[0].status !== BorrowStatus.ACCEPTED) return next(new AppError(BORROW_MESSAGES.ONLY_ACCEPTED_ISSUE, HTTP_STATUS.BAD_REQUEST));
 
         await pool.query(
             "UPDATE borrowings SET status = ?, due_date = DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 1 MONTH) WHERE id = ?",
             [BorrowStatus.ISSUED, id]
+        );
+
+        sendEmail(
+            borrowing[0].email,
+            'Book Issued',
+            BorrowStatusEmail({ userName: borrowing[0].name, bookTitle: borrowing[0].title, status: 'issued' })
         );
 
         res.status(HTTP_STATUS.OK).json({ message: BORROW_MESSAGES.ISSUE_SUCCESS });
@@ -186,7 +226,12 @@ router.put('/:id/return', authenticateToken, authorizeRoles('librarian', 'admin'
     try {
         const { id } = req.params;
 
-        const [borrowings]: any = await pool.query("SELECT book_id, status, due_date FROM borrowings WHERE id = ?", [id]);
+        const [borrowings]: any = await pool.query(`
+            SELECT br.book_id, br.status, br.due_date, u.email, u.name, b.title 
+            FROM borrowings br 
+            JOIN users u ON br.user_id = u.id 
+            JOIN books b ON br.book_id = b.id 
+            WHERE br.id = ?`, [id]);
         if (borrowings.length === 0) return next(new AppError(BORROW_MESSAGES.NOT_FOUND, HTTP_STATUS.NOT_FOUND));
         
         const borrowing = borrowings[0];
@@ -208,6 +253,12 @@ router.put('/:id/return', authenticateToken, authorizeRoles('librarian', 'admin'
         await pool.query(
             "UPDATE borrowings SET status = ?, return_date = CURRENT_TIMESTAMP, penalty_amount = ? WHERE id = ?",
             [BorrowStatus.RETURNED, penaltyAmount, id]
+        );
+
+        sendEmail(
+            borrowing.email,
+            'Book Returned',
+            BorrowStatusEmail({ userName: borrowing.name, bookTitle: borrowing.title, status: 'returned' })
         );
 
         res.status(HTTP_STATUS.OK).json({

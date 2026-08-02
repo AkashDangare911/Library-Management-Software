@@ -15,7 +15,9 @@ export const AdminDashboard = () => {
   const navigate = useNavigate();
   
   type AdminTab = 'OVERVIEW' | 'USERS' | 'ALL BOOKS' | 'ADD BOOK' | 'BORROWINGS' | 'SETTINGS';
-  const [activeTab, setActiveTab] = useState<AdminTab>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<AdminTab>(
+    user?.role === 'admin' ? 'OVERVIEW' : 'ALL BOOKS'
+  );
 
   useEffect(() => {
     if (!isLoading && (!user || (user.role !== 'admin' && user.role !== 'librarian'))) {

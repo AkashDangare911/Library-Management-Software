@@ -6,6 +6,8 @@ import jwt from 'jsonwebtoken';
 import { HTTP_STATUS, AUTH_MESSAGES } from "../utils/responseCodes.js";
 import { authenticateToken, type AuthRequest } from '../middlewares/authMiddleware.js';
 import { AppError } from "../utils/AppError.js";
+import { sendEmail } from "../utils/emailService.js";
+import { WelcomeEmail } from "../emails/WelcomeEmail.js";
 
 dotenv.config();
 const SALT_ROUNDS = 10;
@@ -34,6 +36,14 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
             sameSite: 'strict',
             maxAge: 3600000
         });
+
+        // Fire and forget welcome email
+        sendEmail(
+            userEmail, 
+            'Welcome to the Library Management System!', 
+            WelcomeEmail({ userName })
+        );
+
         res.status(HTTP_STATUS.CREATED)
             .json({
                 message: AUTH_MESSAGES.REGISTER_SUCCESS,

@@ -61,7 +61,7 @@ router.put('/settings', authenticateToken, authorizeRoles('admin'), async (req: 
     }
 });
 
-router.get('/borrowings', authenticateToken, authorizeRoles('admin'), async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/borrowings', authenticateToken, authorizeRoles('admin', 'librarian'), async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const query = `
             SELECT b.*, u.name as user_name, u.email as user_email, bk.title as book_title
