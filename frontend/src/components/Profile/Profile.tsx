@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Heart, Lock, BookOpen, Star } from 'lucide-react';
+import { User, Heart, Lock, BookOpen, Star, Bookmark } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 // Tabs
@@ -7,6 +7,7 @@ import { BorrowingsTab } from './tabs/BorrowingsTab';
 import { FavoritesTab } from './tabs/FavoritesTab';
 import { ReviewsTab } from './tabs/ReviewsTab';
 import { SecurityTab } from './tabs/SecurityTab';
+import { WishlistTab } from './tabs/WishlistTab';
 
 import './profile.css';
 
@@ -14,9 +15,9 @@ export const Profile = () => {
   const { user } = useAuth();
   const isStaff = user?.role === 'admin' || user?.role === 'librarian';
 
-  const [activeTab, setActiveTab] = useState<'borrowings' | 'favorites' | 'reviews' | 'security'>(isStaff ? 'favorites' : 'borrowings');
+  const [activeTab, setActiveTab] = useState<'borrowings' | 'favorites' | 'reviews' | 'security' | 'wishlist'>(isStaff ? 'favorites' : 'borrowings');
 
-  const handleTabChange = (tab: 'borrowings' | 'favorites' | 'reviews' | 'security') => setActiveTab(tab);
+  const handleTabChange = (tab: 'borrowings' | 'favorites' | 'reviews' | 'security' | 'wishlist') => setActiveTab(tab);
 
   return (
     <div className="profile-dashboard">
@@ -44,6 +45,12 @@ export const Profile = () => {
           >
             <Heart size={20} /> My Favorites
           </button>
+          <button
+            className={`sidebar-btn ${activeTab === 'wishlist' ? 'active' : ''}`}
+            onClick={() => handleTabChange('wishlist')}
+          >
+            <Bookmark size={20} /> My Wishlist
+          </button>
           {!isStaff && (
             <button
               className={`sidebar-btn ${activeTab === 'reviews' ? 'active' : ''}`}
@@ -65,6 +72,7 @@ export const Profile = () => {
       <main className="profile-main">
         {activeTab === 'borrowings' && !isStaff && <BorrowingsTab />}
         {activeTab === 'favorites' && <FavoritesTab />}
+        {activeTab === 'wishlist' && <WishlistTab />}
         {activeTab === 'reviews' && !isStaff && <ReviewsTab />}
         {activeTab === 'security' && <SecurityTab />}
       </main>

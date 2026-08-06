@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Loader } from '../Loader/Loader';
-import { getBookByID, getFavorites, toggleFavorite, requestBorrow, getMyBorrowings, cancelBorrowRequest } from '../../utils/api';
+import { getBookByID, getFavorites, toggleFavorite, requestBorrow, getMyBorrowings, cancelBorrowRequest, getWishlist, toggleWishlist } from '../../utils/api';
 import { getBookBorrowingHistory } from '../../utils/adminApi';
-import { Heart } from 'lucide-react';
+import { Heart, Bookmark } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { BorrowStatus } from '../../types/BorrowStatus';
@@ -29,6 +29,7 @@ export const BookDetails = () => {
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
   const [error, setError] = useState<{ message: string, type: "auth" | "not_found" | "generic" } | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,13 +80,22 @@ export const BookDetails = () => {
           }
         }
 
+        // Fetch wishlist to see if this book is wishlisted
+        const wishlistRes = await getWishlist();
+        if (wishlistRes.ok) {
+          const wishlistData = await wishlistRes.json();
+          if (wishlistData.includes(Number(bookID))) {
+            setIsWishlisted(true);
+          }
+        }
+
         // Fetch user's borrowings to see if they already requested this book
         if (user.role === 'member') {
           const borrowRes = await getMyBorrowings();
           if (borrowRes.ok) {
             const borrowData = await borrowRes.json();
-            const active = borrowData.find((b: any) => 
-              b.book_id === Number(bookID) && 
+            const active = borrowData.find((b: any) =>
+              b.book_id === Number(bookID) &&
               [BorrowStatus.PENDING, BorrowStatus.ACCEPTED, BorrowStatus.ISSUED, BorrowStatus.OVERDUE].includes(b.status as BorrowStatus)
             );
             if (active) {
@@ -96,8 +106,8 @@ export const BookDetails = () => {
               }
             }
 
-            const hasBorrowedBook = borrowData.some((b: any) => 
-              b.book_id === Number(bookID) && 
+            const hasBorrowedBook = borrowData.some((b: any) =>
+              b.book_id === Number(bookID) &&
               [BorrowStatus.ISSUED, BorrowStatus.RETURNED, BorrowStatus.OVERDUE].includes(b.status as BorrowStatus)
             );
             setHasBorrowed(hasBorrowedBook);
@@ -131,12 +141,23 @@ export const BookDetails = () => {
     }
   };
 
+  const handleWishlistToggle = async () => {
+    try {
+      const res = await toggleWishlist(Number(bookID));
+      if (res.ok) {
+        setIsWishlisted(!isWishlisted);
+      }
+    } catch (err) {
+      console.error("Failed to toggle wishlist", err);
+    }
+  };
+
   const handleBorrowRequest = async () => {
     if (!user) {
       navigate('/auth/login', { state: { from: location.pathname } });
       return;
     }
-    
+
     setIsRequesting(true);
     try {
       const res = await requestBorrow(Number(bookID));
@@ -157,7 +178,7 @@ export const BookDetails = () => {
 
   const handleCancelRequest = async () => {
     if (!activeBorrowingId) return;
-    
+
     setIsRequesting(true);
     try {
       const res = await cancelBorrowRequest(activeBorrowingId);
@@ -227,26 +248,48 @@ export const BookDetails = () => {
                 <h1>{book.title}</h1>
                 <h3>By {book.author}</h3>
               </div>
-              <button
-                className="favorite-btn-details"
-                onClick={handleFavoriteToggle}
-                aria-label="Toggle Favorite"
-                style={{
-                  background: 'transparent',
-                  border: 'white',
-                  cursor: 'pointer',
-                  padding: '0.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <Heart
-                  size={32}
-                  fill={isFavorite ? "var(--primary-color)" : "none"}
-                  color={isFavorite ? "var(--primary-color)" : "var(--text-main)"}
-                />
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  className="wishlist-btn-details"
+                  onClick={handleWishlistToggle}
+                  aria-label="Toggle Wishlist"
+                  style={{
+                    background: 'transparent',
+                    border: 'white',
+                    cursor: 'pointer',
+                    padding: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Bookmark
+                    size={32}
+                    fill={isWishlisted ? "var(--primary-color)" : "none"}
+                    color={isWishlisted ? "var(--primary-color)" : "var(--text-main)"}
+                  />
+                </button>
+                <button
+                  className="favorite-btn-details"
+                  onClick={handleFavoriteToggle}
+                  aria-label="Toggle Favorite"
+                  style={{
+                    background: 'transparent',
+                    border: 'white',
+                    cursor: 'pointer',
+                    padding: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Heart
+                    size={32}
+                    fill={isFavorite ? "var(--primary-color)" : "none"}
+                    color={isFavorite ? "var(--primary-color)" : "var(--text-main)"}
+                  />
+                </button>
+              </div>
             </div>
 
             <div className="book-details-meta">
@@ -273,8 +316,8 @@ export const BookDetails = () => {
                     Return Date: {new Date(activeBorrowingDueDate).toLocaleDateString()}
                   </p>
                 )}
-                <button 
-                  className="borrow-btn" 
+                <button
+                  className="borrow-btn"
                   disabled={book.available_copies === 0 || isRequesting || activeBorrowingStatus !== null}
                   style={{ display: activeBorrowingStatus === BorrowStatus.PENDING ? 'none' : 'block' }}
                   onClick={() => {
@@ -285,17 +328,17 @@ export const BookDetails = () => {
                     }
                   }}
                 >
-                  {activeBorrowingStatus 
+                  {activeBorrowingStatus
                     ? (
                       activeBorrowingStatus === BorrowStatus.ACCEPTED ? "Ready for Collection" :
-                      ([BorrowStatus.ISSUED, BorrowStatus.OVERDUE].includes(activeBorrowingStatus as BorrowStatus) ? "You own the book" : 
-                      `Status: ${activeBorrowingStatus.charAt(0).toUpperCase() + activeBorrowingStatus.slice(1)}`)
+                        ([BorrowStatus.ISSUED, BorrowStatus.OVERDUE].includes(activeBorrowingStatus as BorrowStatus) ? "You own the book" :
+                          `Status: ${activeBorrowingStatus.charAt(0).toUpperCase() + activeBorrowingStatus.slice(1)}`)
                     )
                     : (book.available_copies > 0 ? "Request to Borrow" : "Out of Stock")}
                 </button>
                 {[BorrowStatus.PENDING, BorrowStatus.ACCEPTED].includes(activeBorrowingStatus as BorrowStatus) && (
-                  <button 
-                    className="borrow-btn" 
+                  <button
+                    className="borrow-btn"
                     style={{ backgroundColor: '#b91c1c' }}
                     disabled={isRequesting}
                     onClick={() => setShowCancelModal(true)}

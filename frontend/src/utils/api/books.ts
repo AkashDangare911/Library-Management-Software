@@ -42,3 +42,25 @@ export const toggleFavorite = async (bookID: number) => {
   });
   return response;
 };
+
+// --- Wishlist API ---
+
+export const getWishlist = async () => {
+  const url = `${apiUrl}/books/me/wishlist`;
+  const response = await fetch(url, {
+    credentials: "include"
+  });
+  return response;
+};
+
+export const toggleWishlist = async (bookID: number) => {
+  const url = `${apiUrl}/books/${bookID}/wishlist`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include"
+  });
+  return response;
+};

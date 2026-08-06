@@ -107,6 +107,50 @@ router.post('/:bookID/favorite', authenticateToken, async (req: AuthRequest, res
     }
 });
 
+router.get('/me/wishlist', authenticateToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userID = req.user?.id;
+        if (!userID) {
+            return next(new AppError(BOOK_MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED));
+        }
+
+        const [rows]: any = await pool.query('SELECT book_id FROM wishlists WHERE user_id = ?', [userID]);
+        const wishlistBookIDs = rows.map((row: any) => row.book_id);
+
+        res.status(HTTP_STATUS.OK).json(wishlistBookIDs);
+    } catch (error) {
+        next(new AppError("Failed to fetch wishlist", HTTP_STATUS.INTERNAL_SERVER_ERROR));
+    }
+});
+
+router.post('/:bookID/wishlist', authenticateToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userID = req.user?.id;
+        const { bookID } = req.params;
+
+        if (!userID) {
+            return next(new AppError(BOOK_MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED));
+        }
+
+        const [book]: any = await pool.query('SELECT id FROM books WHERE id = ?', [bookID]);
+        if (book.length === 0) {
+            return next(new AppError(BOOK_MESSAGES.BOOK_NOT_FOUND, HTTP_STATUS.NOT_FOUND));
+        }
+
+        const [existing]: any = await pool.query('SELECT * FROM wishlists WHERE user_id = ? AND book_id = ?', [userID, bookID]);
+
+        if (existing.length > 0) {
+            await pool.query('DELETE FROM wishlists WHERE user_id = ? AND book_id = ?', [userID, bookID]);
+            return res.status(HTTP_STATUS.OK).json({ message: "Removed from wishlist", isWishlisted: false });
+        } else {
+            await pool.query('INSERT INTO wishlists (user_id, book_id) VALUES (?, ?)', [userID, bookID]);
+            return res.status(HTTP_STATUS.OK).json({ message: "Added to wishlist", isWishlisted: true });
+        }
+    } catch (error) {
+        next(new AppError("Failed to toggle wishlist", HTTP_STATUS.INTERNAL_SERVER_ERROR));
+    }
+});
+
 router.get('/:bookID', authenticateToken, async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { bookID } = req.params;
