@@ -1,57 +1,33 @@
-import { apiUrl } from './config';
+import { axiosClient } from './axiosClient';
 
 export const requestBorrow = async (bookID: number) => {
-  return await fetch(`${apiUrl}/borrowings/request`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bookID }),
-    credentials: "include"
-  });
+  return await axiosClient.post(`/borrowings/request`, { bookID });
 };
 
 export const cancelBorrowRequest = async (borrowingID: number) => {
-  return await fetch(`${apiUrl}/borrowings/${borrowingID}/cancel`, {
-    method: 'PUT',
-    credentials: "include"
-  });
+  return await axiosClient.put(`/borrowings/${borrowingID}/cancel`);
 };
 
 export const getMyBorrowings = async () => {
-  return await fetch(`${apiUrl}/borrowings/me`, { credentials: "include" });
+  return await axiosClient.get(`/borrowings/me`);
 };
 
 export const getAllBorrowings = async (status?: string) => {
-  let url = `${apiUrl}/borrowings/all`;
-  if (status) url += `?status=${status}`;
-  return await fetch(url, { credentials: "include" });
+  return await axiosClient.get(`/borrowings/all`, { params: status ? { status } : undefined });
 };
 
 export const acceptBorrowRequest = async (borrowingID: number) => {
-  return await fetch(`${apiUrl}/borrowings/${borrowingID}/accept`, {
-    method: 'PUT',
-    credentials: "include"
-  });
+  return await axiosClient.put(`/borrowings/${borrowingID}/accept`);
 };
 
 export const rejectBorrowRequest = async (borrowingID: number, reason: string) => {
-  return await fetch(`${apiUrl}/borrowings/${borrowingID}/reject`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ reason }),
-    credentials: "include"
-  });
+  return await axiosClient.put(`/borrowings/${borrowingID}/reject`, { reason });
 };
 
 export const issueBook = async (borrowingID: number) => {
-  return await fetch(`${apiUrl}/borrowings/${borrowingID}/issue`, {
-    method: 'PUT',
-    credentials: "include"
-  });
+  return await axiosClient.put(`/borrowings/${borrowingID}/issue`);
 };
 
 export const returnBook = async (borrowingID: number) => {
-  return await fetch(`${apiUrl}/borrowings/${borrowingID}/return`, {
-    method: 'PUT',
-    credentials: "include"
-  });
+  return await axiosClient.put(`/borrowings/${borrowingID}/return`);
 };

@@ -1,66 +1,29 @@
-import { apiUrl } from './config';
+import { axiosClient } from './axiosClient';
 
 export const getAllBooks = async (params?: Record<string, string>) => {
-  let url = `${apiUrl}/books`;
-  if (params) {
-    const queryString = new URLSearchParams(params).toString();
-    if (queryString) {
-      url += `?${queryString}`;
-    }
-  }
-  const response = await fetch(url, {
-    credentials: "include"
-  });
-  return response;
+  return await axiosClient.get(`/books`, { params });
 };
 
 export const getBookByID = async (bookID: string) => {
-  const response = await fetch(`${apiUrl}/books/${bookID}`, {
-    credentials: "include"
-  });
-  return response;
+  return await axiosClient.get(`/books/${bookID}`);
 };
 
 // --- Favorites API ---
 
 export const getFavorites = async () => {
-  const url = `${apiUrl}/books/me/favorites`;
-  const response = await fetch(url, {
-    credentials: "include"
-  });
-  return response;
+  return await axiosClient.get(`/books/me/favorites`);
 };
 
 export const toggleFavorite = async (bookID: number) => {
-  const url = `${apiUrl}/books/${bookID}/favorite`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include"
-  });
-  return response;
+  return await axiosClient.post(`/books/${bookID}/favorite`);
 };
 
 // --- Wishlist API ---
 
 export const getWishlist = async () => {
-  const url = `${apiUrl}/books/me/wishlist`;
-  const response = await fetch(url, {
-    credentials: "include"
-  });
-  return response;
+  return await axiosClient.get(`/books/me/wishlist`);
 };
 
 export const toggleWishlist = async (bookID: number) => {
-  const url = `${apiUrl}/books/${bookID}/wishlist`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include"
-  });
-  return response;
+  return await axiosClient.post(`/books/${bookID}/wishlist`);
 };

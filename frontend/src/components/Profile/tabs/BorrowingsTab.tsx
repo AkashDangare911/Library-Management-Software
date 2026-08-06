@@ -17,10 +17,7 @@ export const BorrowingsTab = () => {
     const fetchBorrowings = async () => {
       try {
         const res = await getMyBorrowings();
-        if (res.ok) {
-          const data = await res.json();
-          setMyBorrowings(data);
-        }
+        setMyBorrowings(res.data);
       } catch (err) {
         console.error("Failed to load borrowings", err);
       } finally {

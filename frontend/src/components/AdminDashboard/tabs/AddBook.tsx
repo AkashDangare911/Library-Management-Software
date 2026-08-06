@@ -31,17 +31,12 @@ export const AddBook: React.FC<AddBookProps> = ({ onSuccess }) => {
 
   const confirmAddBook = async () => {
     try {
-      const res = await addBook(newBook);
-      if (res.ok) {
-        addToast("Book added successfully", "success");
-        setNewBook({ title: '', author: '', isbn: '', description: '', category: '', total_copies: 1 });
-        onSuccess();
-      } else {
-        const data = await res.json();
-        addToast(data.error || "Failed to add book", "error");
-      }
-    } catch (err) {
-      addToast("Error adding book", "error");
+      await addBook(newBook);
+      addToast("Book added successfully", "success");
+      setNewBook({ title: '', author: '', isbn: '', description: '', category: '', total_copies: 1 });
+      onSuccess();
+    } catch (err: any) {
+      addToast(err.response?.data?.error || "Error adding book", "error");
     } finally {
       setConfirmingAddBook(false);
     }

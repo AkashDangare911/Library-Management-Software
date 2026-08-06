@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { handleErrors } from "../validateFormErrors";
 import { useToast } from "../../../context/ToastContext";
 import { useAuth } from "../../../context/AuthContext";
+import { axiosClient } from "../../../utils/api/axiosClient";
 import "../Login/login.css"; // Reuse the login styles for the register form
 
 export const Register = () => {
@@ -33,25 +34,10 @@ export const Register = () => {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
-      const response = await fetch(`${apiUrl}/auth/register`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ userName, userEmail, userPassword })
-      });
+      const response = await axiosClient.post(`/auth/register`, { userName, userEmail, userPassword });
 
-      const jsondata = await response.json();
+      const jsondata = response.data;
       console.log(jsondata);
-
-      if (jsondata.error) {
-        setError(jsondata.error);
-        addToast(jsondata.error, "error");
-        console.log(error);
-        return;
-      }
 
       // store and redirect to homw
       if (jsondata.user) {
@@ -61,9 +47,11 @@ export const Register = () => {
       }
       addToast("Registered successfully!", "success");
       navigate('/');
-    } catch (err) {
+    } catch (err: any) {
       console.log(err);
-      addToast("An unexpected error occurred", "error");
+      const errorMsg = err.response?.data?.error || "An unexpected error occurred";
+      setError(errorMsg);
+      addToast(errorMsg, "error");
     }
   }
 

@@ -16,20 +16,13 @@ export const FavoritesTab = () => {
     const fetchFavoriteBooks = async () => {
       try {
         const favRes = await getFavorites();
-        if (favRes.ok) {
-          const bookIDs = await favRes.json();
-          if (bookIDs.length > 0) {
-            const bookPromises = bookIDs.map((id: number) => getBookByID(String(id)));
-            const responses = await Promise.all(bookPromises);
+        const bookIDs = favRes.data;
+        if (bookIDs.length > 0) {
+          const bookPromises = bookIDs.map((id: number) => getBookByID(String(id)));
+          const responses = await Promise.all(bookPromises);
 
-            const booksData = [];
-            for (const response of responses) {
-              if (response.ok) {
-                booksData.push(await response.json());
-              }
-            }
-            setFavoriteBooks(booksData);
-          }
+          const booksData = responses.map(res => res.data);
+          setFavoriteBooks(booksData);
         }
       } catch (err) {
         console.error("Failed to load favorites", err);

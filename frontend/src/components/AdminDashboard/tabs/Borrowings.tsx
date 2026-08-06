@@ -15,9 +15,9 @@ export const Borrowings = () => {
       setLoading(true);
       try {
         const res = await fetchAllBorrowingsHistory();
-        if (res.ok) setBorrowingsHistory(await res.json());
-      } catch (err) {
-        addToast("Failed to load borrowings data", "error");
+        setBorrowingsHistory(res.data);
+      } catch (err: any) {
+        addToast(err.response?.data?.error || "Failed to load borrowings data", "error");
       } finally {
         setLoading(false);
       }

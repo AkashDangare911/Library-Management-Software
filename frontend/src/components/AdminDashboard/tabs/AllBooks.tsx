@@ -30,12 +30,10 @@ export const AllBooks = () => {
     setLoading(true);
     try {
       const res = await getAllBooks({ page: String(page), limit: '10', search: searchQuery });
-      if (res.ok) {
-        const data = await res.json();
-        setBooksList(data.books || data);
-        setTotalPages(data.totalPages || 1);
-        setTotalItems(data.totalItems || 0);
-      }
+      const data = res.data;
+      setBooksList(data.books || data);
+      setTotalPages(data.totalPages || 1);
+      setTotalItems(data.totalItems || 0);
     } catch (err) {
       addToast("Failed to load books", "error");
     } finally {
@@ -50,17 +48,12 @@ export const AllBooks = () => {
   const confirmDeleteBook = async () => {
     if (!deletingBook) return;
     try {
-      const res = await deleteBook(deletingBook.id);
-      if (res.ok) {
-        addToast("Book deleted successfully", "success");
-        setDeletingBook(null);
-        loadBooks();
-      } else {
-        const data = await res.json();
-        addToast(data.error || "Failed to delete book", "error");
-      }
-    } catch (err) {
-      addToast("Error deleting book", "error");
+      await deleteBook(deletingBook.id);
+      addToast("Book deleted successfully", "success");
+      setDeletingBook(null);
+      loadBooks();
+    } catch (err: any) {
+      addToast(err.response?.data?.error || "Error deleting book", "error");
     }
   };
 

@@ -34,25 +34,20 @@ export const BooksList = () => {
 
   useEffect(() => {
     if (user) {
-      getFavorites().then(async (res) => {
-        if (res.ok) {
-          const data = await res.json();
-          setFavorites(new Set(data));
-        }
-      });
+      getFavorites().then((res) => {
+        setFavorites(new Set(res.data));
+      }).catch(err => console.error(err));
+
       if (user.role === 'member') {
-        getMyBorrowings().then(async (res) => {
-          if (res.ok) {
-            const data = await res.json();
-            const statusMap: Record<number, string> = {};
-            data.forEach((b: Borrowing) => {
-              if (['pending', 'accepted', 'issued', 'overdue'].includes(b.status)) {
-                statusMap[b.book_id] = b.status;
-              }
-            });
-            setBorrowStatusMap(statusMap);
-          }
-        });
+        getMyBorrowings().then((res) => {
+          const statusMap: Record<number, string> = {};
+          res.data.forEach((b: Borrowing) => {
+            if (['pending', 'accepted', 'issued', 'overdue'].includes(b.status)) {
+              statusMap[b.book_id] = b.status;
+            }
+          });
+          setBorrowStatusMap(statusMap);
+        }).catch(err => console.error(err));
       }
     }
   }, [user]);
@@ -122,24 +117,21 @@ export const BooksList = () => {
         }
 
         const response = await getAllBooks(params);
-
-        if (response.status === 401 || response.status === 403) {
-          logout();
-          setError("Please log in to view the library catalog.");
-          return;
-        }
-
-        if (!response.ok) throw new Error("Failed to fetch books");
-        const data = await response.json();
+        const data = response.data;
 
         setBooks(data.books);
         setTotalPages(data.totalPages || 1);
 
         setQueryCache(queryString, data);
 
-      } catch (err) {
-        setError("Could not load the library catalog.");
-        console.error(err);
+      } catch (err: any) {
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          logout();
+          setError("Please log in to view the library catalog.");
+        } else {
+          setError("Could not load the library catalog.");
+          console.error(err);
+        }
       } finally {
         setIsInitialLoad(false);
         setIsFiltering(false);
@@ -169,17 +161,15 @@ export const BooksList = () => {
     }
 
     try {
-      const res = await toggleFavorite(bookID); // update the backend
-      if (res.ok) {
-        // update frontend state (don't refetch from BE)
-        // upon reload, we'll get the latest state from BE
-        setFavorites(prev => {
-          const next = new Set(prev);
-          if (next.has(bookID)) next.delete(bookID);
-          else next.add(bookID);
-          return next;
-        });
-      }
+      await toggleFavorite(bookID); // update the backend
+      // update frontend state (don't refetch from BE)
+      // upon reload, we'll get the latest state from BE
+      setFavorites(prev => {
+        const next = new Set(prev);
+        if (next.has(bookID)) next.delete(bookID);
+        else next.add(bookID);
+        return next;
+      });
     } catch (err) {
       console.error(err);
     }

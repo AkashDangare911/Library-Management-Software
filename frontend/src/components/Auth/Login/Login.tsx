@@ -3,6 +3,7 @@ import "./login.css";
 import { useState } from "react";
 import { useToast } from "../../../context/ToastContext";
 import { useAuth } from "../../../context/AuthContext";
+import { axiosClient } from "../../../utils/api/axiosClient";
 
 export const Login = () => {
   const { addToast } = useToast();
@@ -28,27 +29,13 @@ export const Login = () => {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
-      const response = await fetch(`${apiUrl}/auth/login`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          userEmail,
-          userPassword
-        })
+      const response = await axiosClient.post(`/auth/login`, {
+        userEmail,
+        userPassword
       });
 
-      const jsondata = await response.json();
+      const jsondata = response.data;
       console.log(jsondata);
-
-      if (jsondata.error) {
-        setError(jsondata.error);
-        addToast(jsondata.error, "error");
-        return;
-      }
 
       if (jsondata.user) {
         login(jsondata.user);
@@ -58,10 +45,11 @@ export const Login = () => {
       addToast("Logged in successfully!", "success");
       const from = location.state?.from || '/';
       navigate(from, { replace: true });
-    } catch (err) {
+    } catch (err: any) {
       console.log(err);
-      setError("An unexpected error occurred");
-      addToast("An unexpected error occurred", "error");
+      const errorMsg = err.response?.data?.error || "An unexpected error occurred";
+      setError(errorMsg);
+      addToast(errorMsg, "error");
       return;
     }
   }

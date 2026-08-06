@@ -31,7 +31,7 @@ export const Users = () => {
     setLoading(true);
     try {
       const res = await fetchAllUsers();
-      if (res.ok) setUsersList(await res.json());
+      setUsersList(res.data);
     } catch (err) {
       addToast("Failed to load users data", "error");
     } finally {
@@ -45,16 +45,11 @@ export const Users = () => {
 
   const handleRoleChange = async (userId: number, role: string) => {
     try {
-      const res = await updateUserRole(userId, role);
-      if (res.ok) {
-        addToast("Role updated successfully", "success");
-        loadData();
-      } else {
-        const data = await res.json();
-        addToast(data.error || "Failed to update role", "error");
-      }
-    } catch (err) {
-      addToast("Error updating role", "error");
+      await updateUserRole(userId, role);
+      addToast("Role updated successfully", "success");
+      loadData();
+    } catch (err: any) {
+      addToast(err.response?.data?.error || "Error updating role", "error");
     } finally {
       setRoleChangeAction(null);
     }
@@ -63,17 +58,12 @@ export const Users = () => {
   const confirmDeleteUser = async () => {
     if (!deletingUser) return;
     try {
-      const res = await deleteUser(deletingUser.id);
-      if (res.ok) {
-        addToast("User deleted successfully", "success");
-        setDeletingUser(null);
-        loadData();
-      } else {
-        const data = await res.json();
-        addToast(data.error || "Failed to delete user", "error");
-      }
-    } catch (err) {
-      addToast("Error deleting user", "error");
+      await deleteUser(deletingUser.id);
+      addToast("User deleted successfully", "success");
+      setDeletingUser(null);
+      loadData();
+    } catch (err: any) {
+      addToast(err.response?.data?.error || "Error deleting user", "error");
     }
   };
 

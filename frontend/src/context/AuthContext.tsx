@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { apiUrl } from '../utils/api';
+import { axiosClient } from '../utils/api/axiosClient';
 
 export type UserRole = 'member' | 'librarian' | 'admin';
 
@@ -42,16 +42,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       try {
-        const res = await fetch(`${apiUrl}/auth/me`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          // Token might be expired or invalid
-          localStorage.removeItem("is_user_logged_in");
-          setUser(null);
-        }
+        const res = await axiosClient.get(`/auth/me`);
+        setUser(res.data.user);
       } catch (err) {
+        // Token might be expired or invalid
+        localStorage.removeItem("is_user_logged_in");
+        setUser(null);
         console.error("Failed to fetch user profile", err);
       } finally {
         setIsLoading(false);

@@ -54,46 +54,30 @@ export const BookDetails = () => {
 
       try {
         const response = await getBookByID(bookID as string);
-
-        if (response.status === 401 || response.status === 403) {
-          logout();
-          setError({ message: "Session expired or invalid. Please login first to see the contents.", type: "auth" });
-          return;
-        }
-
-        if (response.status === 404) {
-          setError({ message: "Book not found in the archives.", type: "not_found" });
-          return;
-        }
-
-        if (!response.ok) throw new Error("Failed to fetch book details");
-
-        const data = await response.json();
+        const data = response.data;
         setBook(data);
 
         // Fetch favorites to see if this book is favored
-        const favRes = await getFavorites();
-        if (favRes.ok) {
-          const favData = await favRes.json();
-          if (favData.includes(Number(bookID))) {
+        try {
+          const favRes = await getFavorites();
+          if (favRes.data.includes(Number(bookID))) {
             setIsFavorite(true);
           }
-        }
+        } catch (err) { console.error(err); }
 
         // Fetch wishlist to see if this book is wishlisted
-        const wishlistRes = await getWishlist();
-        if (wishlistRes.ok) {
-          const wishlistData = await wishlistRes.json();
-          if (wishlistData.includes(Number(bookID))) {
+        try {
+          const wishlistRes = await getWishlist();
+          if (wishlistRes.data.includes(Number(bookID))) {
             setIsWishlisted(true);
           }
-        }
+        } catch (err) { console.error(err); }
 
         // Fetch user's borrowings to see if they already requested this book
         if (user.role === 'member') {
-          const borrowRes = await getMyBorrowings();
-          if (borrowRes.ok) {
-            const borrowData = await borrowRes.json();
+          try {
+            const borrowRes = await getMyBorrowings();
+            const borrowData = borrowRes.data;
             const active = borrowData.find((b: any) =>
               b.book_id === Number(bookID) &&
               [BorrowStatus.PENDING, BorrowStatus.ACCEPTED, BorrowStatus.ISSUED, BorrowStatus.OVERDUE].includes(b.status as BorrowStatus)
@@ -111,16 +95,27 @@ export const BookDetails = () => {
               [BorrowStatus.ISSUED, BorrowStatus.RETURNED, BorrowStatus.OVERDUE].includes(b.status as BorrowStatus)
             );
             setHasBorrowed(hasBorrowedBook);
-          }
+          } catch (err) { console.error(err); }
         } else if (user.role === 'admin' || user.role === 'librarian') {
-          const historyRes = await getBookBorrowingHistory(bookID as string);
-          if (historyRes.ok) {
-            setBorrowersList(await historyRes.json());
-          }
+          try {
+            const historyRes = await getBookBorrowingHistory(bookID as string);
+            setBorrowersList(historyRes.data);
+          } catch (err) { console.error(err); }
         }
 
-      } catch (err) {
-        setError({ message: "Could not load the book details.", type: "generic" });
+      } catch (err: any) {
+        if (err.response) {
+          if (err.response.status === 401 || err.response.status === 403) {
+            logout();
+            setError({ message: "Session expired or invalid. Please login first to see the contents.", type: "auth" });
+          } else if (err.response.status === 404) {
+            setError({ message: "Book not found in the archives.", type: "not_found" });
+          } else {
+            setError({ message: "Could not load the book details.", type: "generic" });
+          }
+        } else {
+          setError({ message: "Could not load the book details.", type: "generic" });
+        }
         console.error(err);
       } finally {
         setLoading(false);
@@ -132,10 +127,8 @@ export const BookDetails = () => {
 
   const handleFavoriteToggle = async () => {
     try {
-      const res = await toggleFavorite(Number(bookID));
-      if (res.ok) {
-        setIsFavorite(!isFavorite);
-      }
+      await toggleFavorite(Number(bookID));
+      setIsFavorite(!isFavorite);
     } catch (err) {
       console.error("Failed to toggle favorite", err);
     }
@@ -143,10 +136,8 @@ export const BookDetails = () => {
 
   const handleWishlistToggle = async () => {
     try {
-      const res = await toggleWishlist(Number(bookID));
-      if (res.ok) {
-        setIsWishlisted(!isWishlisted);
-      }
+      await toggleWishlist(Number(bookID));
+      setIsWishlisted(!isWishlisted);
     } catch (err) {
       console.error("Failed to toggle wishlist", err);
     }
@@ -160,17 +151,13 @@ export const BookDetails = () => {
 
     setIsRequesting(true);
     try {
-      const res = await requestBorrow(Number(bookID));
-      if (res.ok) {
-        addToast("Borrow request submitted successfully! Pending librarian approval.", "success");
-        setShowBorrowModal(false);
-        navigate('/profile');
-      } else {
-        const data = await res.json();
-        addToast(data.error || "Failed to submit request", "error");
-      }
-    } catch (err) {
-      addToast("Failed to submit borrow request.", "error");
+      await requestBorrow(Number(bookID));
+      addToast("Borrow request submitted successfully! Pending librarian approval.", "success");
+      setShowBorrowModal(false);
+      navigate('/profile');
+    } catch (err: any) {
+      const data = err.response?.data;
+      addToast(data?.error || "Failed to submit request", "error");
     } finally {
       setIsRequesting(false);
     }
@@ -181,19 +168,15 @@ export const BookDetails = () => {
 
     setIsRequesting(true);
     try {
-      const res = await cancelBorrowRequest(activeBorrowingId);
-      const data = await res.json();
-      if (res.ok) {
-        addToast("Request cancelled successfully.", 'success');
-        setActiveBorrowingStatus(null);
-        setActiveBorrowingId(null);
-        setActiveBorrowingDueDate(null);
-        setShowCancelModal(false);
-      } else {
-        addToast(data.error || "Failed to cancel request.", 'error');
-      }
-    } catch (err) {
-      addToast("Network error occurred while cancelling.", 'error');
+      await cancelBorrowRequest(activeBorrowingId);
+      addToast("Request cancelled successfully.", 'success');
+      setActiveBorrowingStatus(null);
+      setActiveBorrowingId(null);
+      setActiveBorrowingDueDate(null);
+      setShowCancelModal(false);
+    } catch (err: any) {
+      const data = err.response?.data;
+      addToast(data?.error || "Failed to cancel request.", 'error');
     } finally {
       setIsRequesting(false);
     }

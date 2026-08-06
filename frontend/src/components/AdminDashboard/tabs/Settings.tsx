@@ -18,9 +18,9 @@ export const Settings = () => {
       setLoading(true);
       try {
         const res = await fetchAdminSettings();
-        if (res.ok) setSettings(await res.json());
-      } catch (err) {
-        addToast("Failed to load settings data", "error");
+        setSettings(res.data);
+      } catch (err: any) {
+        addToast(err.response?.data?.error || "Failed to load settings data", "error");
       } finally {
         setLoading(false);
       }
@@ -31,14 +31,10 @@ export const Settings = () => {
   const handleSettingsUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await updateAdminSettings(settings);
-      if (res.ok) {
-        addToast("Settings updated successfully", "success");
-      } else {
-        addToast("Failed to update settings", "error");
-      }
-    } catch (err) {
-      addToast("Error updating settings", "error");
+      await updateAdminSettings(settings);
+      addToast("Settings updated successfully", "success");
+    } catch (err: any) {
+      addToast(err.response?.data?.error || "Error updating settings", "error");
     }
   };
 

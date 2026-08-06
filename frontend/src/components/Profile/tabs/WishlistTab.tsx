@@ -16,20 +16,13 @@ export const WishlistTab = () => {
     const fetchWishlistBooks = async () => {
       try {
         const wishRes = await getWishlist();
-        if (wishRes.ok) {
-          const bookIDs = await wishRes.json();
-          if (bookIDs.length > 0) {
-            const bookPromises = bookIDs.map((id: number) => getBookByID(String(id)));
-            const responses = await Promise.all(bookPromises);
+        const bookIDs = wishRes.data;
+        if (bookIDs.length > 0) {
+          const bookPromises = bookIDs.map((id: number) => getBookByID(String(id)));
+          const responses = await Promise.all(bookPromises);
 
-            const booksData = [];
-            for (const response of responses) {
-              if (response.ok) {
-                booksData.push(await response.json());
-              }
-            }
-            setWishlistBooks(booksData);
-          }
+          const booksData = responses.map(res => res.data);
+          setWishlistBooks(booksData);
         }
       } catch (err) {
         console.error("Failed to load wishlist", err);

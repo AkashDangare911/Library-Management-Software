@@ -49,10 +49,7 @@ export const LibrarianDashboard = () => {
     try {
       setLoading(true);
       const res = await getAllBorrowings(activeTab);
-      if (res.ok) {
-        const data = await res.json();
-        setBorrowings(data);
-      }
+      setBorrowings(res.data);
     } catch (err) {
       console.error(err);
       addToast("Failed to fetch borrowings", "error");
@@ -69,16 +66,11 @@ export const LibrarianDashboard = () => {
 
   const handleAccept = async (id: number) => {
     try {
-      const res = await acceptBorrowRequest(id);
-      if (res.ok) {
-        addToast("Request accepted! Book reserved for 24 hours.", "success");
-        fetchBorrowings();
-      } else {
-        const data = await res.json();
-        addToast(data.error || "Failed to accept request", "error");
-      }
-    } catch (err) {
-      addToast("Error accepting request", "error");
+      await acceptBorrowRequest(id);
+      addToast("Request accepted! Book reserved for 24 hours.", "success");
+      fetchBorrowings();
+    } catch (err: any) {
+      addToast(err.response?.data?.error || "Error accepting request", "error");
     } finally {
       setConfirmingAction(null);
     }
@@ -90,33 +82,23 @@ export const LibrarianDashboard = () => {
       return;
     }
     try {
-      const res = await rejectBorrowRequest(rejectingId, rejectReason);
-      if (res.ok) {
-        addToast("Request rejected.", "success");
-        setRejectingId(null);
-        setRejectReason("");
-        fetchBorrowings();
-      } else {
-        const data = await res.json();
-        addToast(data.error || "Failed to reject", "error");
-      }
-    } catch (err) {
-      addToast("Error rejecting request", "error");
+      await rejectBorrowRequest(rejectingId, rejectReason);
+      addToast("Request rejected.", "success");
+      setRejectingId(null);
+      setRejectReason("");
+      fetchBorrowings();
+    } catch (err: any) {
+      addToast(err.response?.data?.error || "Error rejecting request", "error");
     }
   };
 
   const handleIssue = async (id: number) => {
     try {
-      const res = await issueBook(id);
-      if (res.ok) {
-        addToast("Book issued successfully.", "success");
-        fetchBorrowings();
-      } else {
-        const data = await res.json();
-        addToast(data.error || "Failed to issue book", "error");
-      }
-    } catch (err) {
-      addToast("Error issuing book", "error");
+      await issueBook(id);
+      addToast("Book issued successfully.", "success");
+      fetchBorrowings();
+    } catch (err: any) {
+      addToast(err.response?.data?.error || "Error issuing book", "error");
     } finally {
       setConfirmingAction(null);
     }
@@ -125,20 +107,15 @@ export const LibrarianDashboard = () => {
   const handleReturn = async (id: number) => {
     try {
       const res = await returnBook(id);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.isOverdue) {
-          addToast(`Book returned. Penalty collected: ₹${data.penalty}`, "success");
-        } else {
-          addToast("Book returned successfully.", "success");
-        }
-        fetchBorrowings();
+      const data = res.data;
+      if (data.isOverdue) {
+        addToast(`Book returned. Penalty collected: ₹${data.penalty}`, "success");
       } else {
-        const data = await res.json();
-        addToast(data.error || "Failed to return book", "error");
+        addToast("Book returned successfully.", "success");
       }
-    } catch (err) {
-      addToast("Error returning book", "error");
+      fetchBorrowings();
+    } catch (err: any) {
+      addToast(err.response?.data?.error || "Error returning book", "error");
     } finally {
       setConfirmingAction(null);
     }

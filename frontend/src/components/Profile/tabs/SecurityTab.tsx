@@ -36,18 +36,12 @@ export const SecurityTab = () => {
 
     try {
       const res = await resetPassword(currentPassword, newPassword);
-      const data = await res.json();
-
-      if (res.ok) {
-        addToast(data.message, 'success');
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-      } else {
-        setInlineError(data.message || 'Failed to update password.');
-      }
-    } catch (error) {
-      setInlineError('An error occurred. Please try again.');
+      addToast(res.data.message || 'Password updated successfully.', 'success');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      setInlineError(error.response?.data?.message || error.response?.data?.error || 'Failed to update password.');
     } finally {
       setIsResetting(false);
     }

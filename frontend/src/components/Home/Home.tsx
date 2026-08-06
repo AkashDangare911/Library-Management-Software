@@ -20,21 +20,18 @@ export const Home = () => {
     const fetchBooks = async () => {
       try {
         const response = await getAllBooks({ limit: "6", sort: "rating_desc" });
-
-        if (response.status === 401 || response.status === 403) {
-          logout();
-          setError("Please log in to view the library catalog.");
-          return;
-        }
-
-        if (!response.ok) throw new Error("Failed to fetch books");
-        const data = await response.json();
+        const data = response.data;
 
         setBooks(data.books);
         setTotalBooks(data.totalItems || 0);
-      } catch (err) {
-        setError("Could not load the library catalog.");
-        console.error(err);
+      } catch (err: any) {
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          logout();
+          setError("Please log in to view the library catalog.");
+        } else {
+          setError("Could not load the library catalog.");
+          console.error(err);
+        }
       } finally {
         setLoading(false);
       }

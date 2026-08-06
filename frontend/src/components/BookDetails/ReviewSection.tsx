@@ -25,10 +25,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ bookId, hasBorrowe
   const loadReviews = async () => {
     try {
       const res = await fetchReviewsByBook(bookId);
-      if (res.ok) {
-        const data = await res.json();
-        setReviews(data);
-      }
+      setReviews(res.data);
     } catch (error) {
       console.error("Failed to fetch reviews", error);
     } finally {
@@ -50,19 +47,13 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ bookId, hasBorrowe
     setIsSubmitting(true);
     try {
       const res = await addReview(bookId, rating, comment);
-      const data = await res.json();
-
-      if (res.ok) {
-        addToast(data.message, "success");
-        setShowForm(false);
-        setComment('');
-        setRating(5);
-        loadReviews();
-      } else {
-        addToast(data.message || "Failed to add review", "error");
-      }
-    } catch (error) {
-      addToast("Failed to connect to server", "error");
+      addToast(res.data.message || "Review added successfully", "success");
+      setShowForm(false);
+      setComment('');
+      setRating(5);
+      loadReviews();
+    } catch (error: any) {
+      addToast(error.response?.data?.message || "Failed to connect to server", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -77,16 +68,10 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ bookId, hasBorrowe
     
     try {
       const res = await deleteReview(deletingReviewId);
-      const data = await res.json();
-      
-      if (res.ok) {
-        addToast(data.message, "success");
-        loadReviews();
-      } else {
-        addToast(data.message || "Failed to delete review", "error");
-      }
-    } catch (error) {
-      addToast("Failed to connect to server", "error");
+      addToast(res.data.message || "Review deleted successfully", "success");
+      loadReviews();
+    } catch (error: any) {
+      addToast(error.response?.data?.message || "Failed to connect to server", "error");
     } finally {
       setDeletingReviewId(null);
     }

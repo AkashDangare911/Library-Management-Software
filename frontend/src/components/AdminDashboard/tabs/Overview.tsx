@@ -12,14 +12,10 @@ export const Overview = () => {
     const loadStats = async () => {
       try {
         const res = await fetchAdminStats();
-        if (res.ok) {
-          setStats(await res.json());
-        } else {
-          addToast("Failed to load overview data", "error");
-        }
-      } catch (err) {
+        setStats(res.data);
+      } catch (err: any) {
         console.error(err);
-        addToast("Failed to load overview data", "error");
+        addToast(err.response?.data?.error || "Failed to load overview data", "error");
       } finally {
         setLoading(false);
       }

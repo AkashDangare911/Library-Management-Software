@@ -19,10 +19,7 @@ export const ReviewsTab = () => {
     const loadReviews = async () => {
       try {
         const res = await fetchMyReviews();
-        if (res.ok) {
-          const data = await res.json();
-          setMyReviews(data);
-        }
+        setMyReviews(res.data);
       } catch (err) {
         console.error("Failed to load reviews", err);
       } finally {
@@ -35,15 +32,11 @@ export const ReviewsTab = () => {
   const confirmDeleteReview = async () => {
     if (!deletingReviewId) return;
     try {
-      const res = await deleteReview(deletingReviewId);
-      if (res.ok) {
-        addToast('Review deleted successfully', 'success');
-        setMyReviews(myReviews.filter(r => r.id !== deletingReviewId));
-      } else {
-        addToast('Failed to delete review', 'error');
-      }
-    } catch (err) {
-      addToast('Failed to connect to server', 'error');
+      await deleteReview(deletingReviewId);
+      addToast('Review deleted successfully', 'success');
+      setMyReviews(myReviews.filter(r => r.id !== deletingReviewId));
+    } catch (err: any) {
+      addToast(err.response?.data?.error || 'Failed to delete review', 'error');
     } finally {
       setDeletingReviewId(null);
     }
