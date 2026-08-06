@@ -122,6 +122,18 @@ This document outlines the core third-party dependencies used in the Library Man
   const match = await bcrypt.compare(password, hashedPassword);
   ```
 
+### 12. `resend`
+- **Why it was added:** Resend is a modern email sending API. It is used to send transactional emails such as welcome emails on user registration and notifications when a book is borrowed.
+- **Example Usage:**
+  ```typescript
+  import { Resend } from 'resend';
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  await resend.emails.send({ from: '...', to: '...', subject: '...', html: '...' });
+  ```
+
+### 13. `@react-email/components` & `@react-email/render`
+- **Why it was added:** These libraries allow us to build email templates using React components instead of raw HTML strings. `@react-email/render` converts these React components into standard HTML that can be sent via Resend.
+
 ---
 
 ## 🛡️ Shared Dependencies
