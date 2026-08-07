@@ -1,13 +1,17 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { render } from '@react-email/render';
 
 dotenv.config();
 
-// Create resend client only if API key exists, otherwise we'll log out emails in dev mode
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
+// Create nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_APP_PASS,
+  },
+});
 
 /**
  * Generic email sending service.
@@ -19,17 +23,17 @@ export const sendEmail = async (to: string, subject: string, reactComponent: any
   try {
     const html = await render(reactComponent as React.ReactElement);
 
-    if (resend) {
-      await resend.emails.send({
-        from: 'Library Management System <onboarding@resend.dev>', // Use onboarding@resend.dev for testing without verified domain
+    if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASS) {
+      await transporter.sendMail({
+        from: `"Library Management System" <${process.env.SMTP_EMAIL}>`,
         to,
         subject,
         html,
       });
       console.log(`[EmailService] Successfully sent email to ${to}`);
     } else {
-      // Development fallback if no API key is provided
-      console.warn(`[EmailService] RESEND_API_KEY not set. Mocking email send to ${to}`);
+      // Development fallback if no SMTP credentials are provided
+      console.warn(`[EmailService] SMTP_EMAIL or SMTP_APP_PASS not set. Mocking email send to ${to}`);
       console.log(`[EmailService] Subject: ${subject}`);
       console.log(`[EmailService] HTML Output: \n`, html);
     }

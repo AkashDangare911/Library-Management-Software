@@ -6,7 +6,7 @@ A modern, full-stack web application designed to manage library books, user regi
 - **Book Catalog:** Browse available books with real-time stock status.
 - **User Authentication:** Login and registration flows for library members.
 - **Borrowing System:** Check out books with automatic stock management.
-- **Email Notifications:** Automated emails on registration and book borrowing using Resend.
+- **Email Notifications:** Automated emails on registration and book borrowing using Nodemailer.
 - **Wishlist:** Save books to your personal wishlist for future reference.
 - **Responsive Design:** Beautiful, CSS-variable driven UI that works on all devices.
 
